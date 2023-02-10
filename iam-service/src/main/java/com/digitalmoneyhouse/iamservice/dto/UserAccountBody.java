@@ -20,5 +20,6 @@ public class UserAccountBody {
     private String phoneNumber;
     @Email
     private String email;
+    @NotBlank
     private String password;
 }
