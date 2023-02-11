@@ -1,16 +1,21 @@
 package com.digitalmoneyhouse.iamservice.model;
 
 import com.digitalmoneyhouse.iamservice.dto.UserAccountBody;
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 @Entity
 @Getter @Setter
-public class UserAccount {
+public class UserAccount implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -27,7 +32,7 @@ public class UserAccount {
     @Column(length = 100, nullable = false)
     private String phoneNumber;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, unique = true)
     private String email;
 
     @Column(length = 100, nullable = false)
@@ -36,6 +41,44 @@ public class UserAccount {
     private String cvu;
 
     private String alias;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "userAccount_role", joinColumns = @JoinColumn(name = "userAccount_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JsonIgnoreProperties("userAccounts")
+    private List<Role> roles;
+
+    public UserAccount() {
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
     public UserAccount(UserAccountBody user) {
         this.firstName = user.getFirstName();
