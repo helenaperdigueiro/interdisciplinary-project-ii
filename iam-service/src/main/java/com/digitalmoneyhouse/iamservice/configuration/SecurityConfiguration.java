@@ -38,17 +38,8 @@ public class SecurityConfiguration<MyUserDetailsService, JwtRequestFilter> exten
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/product/**").permitAll()
-                .antMatchers(HttpMethod.OPTIONS, "/product/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/category/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/city/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/reservation/**").permitAll()
-                .antMatchers(HttpMethod.OPTIONS, "/reservation/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/characteristic/**").permitAll()
-                .antMatchers("/role/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/users").permitAll()
                 .antMatchers("/authenticate/**").permitAll()
-                .antMatchers("/users/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/product/**").hasAuthority("admin")
                 .anyRequest()
                 .authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

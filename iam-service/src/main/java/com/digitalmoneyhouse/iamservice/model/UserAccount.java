@@ -26,7 +26,7 @@ public class UserAccount implements UserDetails {
     @Column(length = 100, nullable = false)
     private String lastName;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, unique = true)
     private String cpf;
 
     @Column(length = 100, nullable = false)
