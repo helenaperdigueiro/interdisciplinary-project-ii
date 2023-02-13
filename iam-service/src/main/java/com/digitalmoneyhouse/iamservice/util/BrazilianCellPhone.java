@@ -14,9 +14,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 @Constraint(validatedBy = {})
-@Pattern(regexp = "\\(?\\d{2}\\)?[ \\-]?\\d{5}[ \\-]?\\d{4}", message = "Invalid mobile phone number")
+@Pattern(regexp = "\\(?\\d{2}\\)?[ \\-]?\\d{5}[ \\-]?\\d{4}", message = "invalid Brazilian mobile number")
 public @interface BrazilianCellPhone {
-    String message() default "Invalid mobile phone number";
+    String message() default "invalid Brazilian mobile number";
 
     Class<?>[] groups() default {};
 

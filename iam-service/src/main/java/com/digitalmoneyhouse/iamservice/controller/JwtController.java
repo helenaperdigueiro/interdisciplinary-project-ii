@@ -1,8 +1,10 @@
 package com.digitalmoneyhouse.iamservice.controller;
 
+import com.digitalmoneyhouse.iamservice.repository.TokenRepository;
 import com.digitalmoneyhouse.iamservice.security.AuthenticationRequest;
 import com.digitalmoneyhouse.iamservice.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,8 +13,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 public class JwtController {
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -25,7 +33,7 @@ public class JwtController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     @CrossOrigin(origins = "*", allowedHeaders = "*")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception{
+    public ResponseEntity<Map<String, String>> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception{
         System.out.println(authenticationRequest.getEmail());
         System.out.println(authenticationRequest.getPassword());
 
@@ -41,7 +49,9 @@ public class JwtController {
         final UserDetails userDetails =
                 userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
         final String jwt = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(jwt);
+        Map<String, String> tokenResponse = new HashMap<>();
+        tokenResponse.put("acessToken", jwt);
+        return ResponseEntity.ok(tokenResponse);
     }
 
 }
