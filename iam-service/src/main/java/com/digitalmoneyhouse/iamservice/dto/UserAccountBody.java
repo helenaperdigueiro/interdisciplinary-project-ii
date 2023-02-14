@@ -14,7 +14,7 @@ public class UserAccountBody {
     private String firstName;
     @NotBlank
     private String lastName;
-    @CPF
+    //@CPF
     private String cpf;
     @BrazilianCellPhone
     private String phoneNumber;
