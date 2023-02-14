@@ -1,8 +1,10 @@
 package com.digitalmoneyhouse.iamservice.security;
 
+import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,9 @@ import java.util.Map;
 public class JwtUtil {
     private String SECRET_KEY = "secret";
 
+    @Autowired
+    private JwtTokenService service;
+
     public String extractUserName(String token) {
         return extractClaimUsername(token);
     }
@@ -24,6 +29,12 @@ public class JwtUtil {
 
     public Date extractClaimDate(String token) {
         Claims claims = extractAllClaims(token);
+        return claims.getExpiration();
+    }
+
+    public Date invalidateToken(String token){
+        Claims claims = extractAllClaims(token);
+        claims.setExpiration(new Date());
         return claims.getExpiration();
     }
 
@@ -49,7 +60,7 @@ public class JwtUtil {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUserName(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && service.isValid(token));
     }
 
     private boolean isTokenExpired(String token) {
