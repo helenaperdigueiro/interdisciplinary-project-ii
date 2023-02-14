@@ -14,24 +14,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class JwtToken {
 
-//    @Column(length = 255, nullable = false)
-//    private String token_id;
-
     @Id
     @Column(length = 255, nullable = false)
     private String token;
-
-
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Integer authentication_id;
-//    @Column(length = 255, nullable = false)
-//    private String user_name;
-//    @Column(length = 255, nullable = false)
-//    private String client_id;
-//    @Column(length = 255, nullable = false)
-//    private String authentication;
-//    @Column(length = 255, nullable = false)
-//    private String refresh_token;
 
 }
