@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,15 +59,10 @@ public class ApiExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse();
         String message = ex.getMostSpecificCause().getMessage();
         errorResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorResponse.setMessage("An unexpected error has occurred");
-        if (message.contains("Duplicate entry")) {
-            Pattern pattern = Pattern.compile("'(.*?)'");
-            Matcher matcher = pattern.matcher(message);
-            if (matcher.find()) {
-                String duplicatedValue = matcher.group(1);
-                errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-                errorResponse.setMessage(String.format("Data '%s' already in use", duplicatedValue));
-            }
+        errorResponse.setMessage("An unexpected error has occurred while saving data in database");
+        if (message.contains("is already in use")) {
+            errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+            errorResponse.setMessage(message);
         }
         if (message.contains("Data too long for column")) {
             Pattern pattern = Pattern.compile("column '(.*?)'");

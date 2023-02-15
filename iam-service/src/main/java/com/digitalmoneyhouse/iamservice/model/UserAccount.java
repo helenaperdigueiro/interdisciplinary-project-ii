@@ -42,6 +42,9 @@ public class UserAccount implements UserDetails {
 
     private String alias;
 
+    @OneToOne(mappedBy = "userAccount")
+    private PasswordResetToken passwordResetToken;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "userAccount_role", joinColumns = @JoinColumn(name = "userAccount_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     @JsonIgnoreProperties("userAccounts")
