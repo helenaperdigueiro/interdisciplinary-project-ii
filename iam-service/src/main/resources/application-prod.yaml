@@ -31,3 +31,6 @@ email-service:
   tls:
   user:
   password:
+
+api:
+  baseUrl:

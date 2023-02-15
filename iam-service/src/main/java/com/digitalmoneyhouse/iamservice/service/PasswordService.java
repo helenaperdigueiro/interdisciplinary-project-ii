@@ -37,4 +37,8 @@ public class PasswordService {
     private boolean isTokenExpired(PasswordResetToken passToken) {
         return passToken.getExpiryDate().isBefore(LocalDateTime.now());
     }
+
+    public void deleteToken(PasswordResetToken passwordResetToken) {
+        passwordRepository.delete(passwordResetToken);
+    }
 }

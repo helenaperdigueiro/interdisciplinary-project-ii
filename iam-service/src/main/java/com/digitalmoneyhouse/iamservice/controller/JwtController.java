@@ -10,6 +10,7 @@ import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
 import com.digitalmoneyhouse.iamservice.service.PasswordService;
 import com.digitalmoneyhouse.iamservice.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.*;
 
 @RestController
@@ -56,6 +56,9 @@ public class JwtController {
 
     @Autowired
     private MessageSource messages;
+
+    @Value("${api.baseUrl}")
+    private String apiBaseUrl;
 
     @RequestMapping(method = RequestMethod.POST, value = "/tokens/revoke/{tokenId:.*}")
     @ResponseBody
@@ -97,7 +100,7 @@ public class JwtController {
         }
         String token = UUID.randomUUID().toString();
         passwordService.createPasswordResetTokenForUser(user, token);
-        mailSender.send(constructResetTokenEmail("http://localhost:8080",
+        mailSender.send(constructResetTokenEmail(apiBaseUrl,
                 request.getLocale(), token, user));
 //        return new GenericResponse(
 //                messages.getMessage("RESETE A SENHA", null,
@@ -120,6 +123,7 @@ public class JwtController {
         UserAccount user = userAccountService.getUserByPasswordResetToken(passwordResetToken);
         //if(user.isPresent()) {
             userAccountService.changeUserPassword(user, passwordDto.getNewPassword());
+            passwordService.deleteToken(passwordResetToken);
             return new GenericResponse("Senha atualizada");
 //            return new GenericResponse(messages.getMessage(
 //                    "message.resetPasswordSuc", null, locale));
