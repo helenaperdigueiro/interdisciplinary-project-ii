@@ -99,9 +99,6 @@ public class JwtController {
         passwordService.createPasswordResetTokenForUser(user, token);
         mailSender.send(constructResetTokenEmail(apiBaseUrl,
                 request.getLocale(), token, user));
-//        return new GenericResponse(
-//                messages.getMessage("RESETE A SENHA", null,
-//                        request.getLocale()));
         return new GenericResponse("RESETE A SENHA");
     }
 
@@ -112,29 +109,18 @@ public class JwtController {
         String result = passwordService.validatePasswordResetToken(token);
 
         if(result != null) {
-//            return new GenericResponse(messages.getMessage(
-//                    "auth.message." + result, null, locale));
             return new GenericResponse("banana");
         }
         PasswordResetToken passwordResetToken = passwordService.findByToken(token);
         UserAccount user = userAccountService.getUserByPasswordResetToken(passwordResetToken);
-        //if(user.isPresent()) {
             userAccountService.changeUserPassword(user, passwordDto.getNewPassword());
             passwordService.deleteToken(passwordResetToken);
             return new GenericResponse("Senha atualizada");
-//            return new GenericResponse(messages.getMessage(
-//                    "message.resetPasswordSuc", null, locale));
-//        } else {
-//            return new GenericResponse(messages.getMessage(
-//                    "auth.message.invalid", null, locale));
-//        }
     }
 
     private SimpleMailMessage constructResetTokenEmail(
             String contextPath, Locale locale, String token, UserAccount userAccount) {
         String url = contextPath + "/user/changePassword?token=" + token;
-//        String message = messages.getMessage("message.resetPassword",
-//                null, locale);
         return constructEmail("Reset Password", "RESETE A SENHA" + " \r\n" + url, userAccount);
     }
 

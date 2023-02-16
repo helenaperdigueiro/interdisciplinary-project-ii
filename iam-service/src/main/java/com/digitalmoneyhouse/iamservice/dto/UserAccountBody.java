@@ -15,10 +15,11 @@ public class UserAccountBody {
     @NotBlank
     private String lastName;
     //@CPF
+    @NotBlank
     private String cpf;
     @BrazilianCellPhone
     private String phoneNumber;
-    @Email
+    @NotBlank @Email
     private String email;
     @NotBlank
     private String password;
