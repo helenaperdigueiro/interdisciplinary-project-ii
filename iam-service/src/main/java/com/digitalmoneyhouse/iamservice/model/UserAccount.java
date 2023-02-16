@@ -50,6 +50,8 @@ public class UserAccount implements UserDetails {
     @JsonIgnoreProperties("userAccounts")
     private List<Role> roles;
 
+    private Boolean isEnabled;
+
     public UserAccount() {
     }
 
@@ -92,6 +94,7 @@ public class UserAccount implements UserDetails {
         this.password = user.getPassword();
         this.cvu = generateCVU();
         this.alias = generateAlias();
+        this.isEnabled = false;
     }
 
     public String generateCVU() {
