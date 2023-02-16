@@ -24,7 +24,11 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UserAccount userAccount = userAccountRepository.findByEmail(username);
+        UserAccount userAccount = userAccountRepository.findByEmailAndIsEnabled(username, true);
+
+        if (userAccount == null) {
+            throw new UsernameNotFoundException("User not found or account not confirmed");
+        }
 
         Set<GrantedAuthority> grantList = new HashSet<GrantedAuthority>();
         for (Role role: userAccount.getRoles()) {

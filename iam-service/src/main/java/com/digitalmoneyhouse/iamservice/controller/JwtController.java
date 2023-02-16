@@ -70,9 +70,6 @@ public class JwtController {
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<Map<String, String>> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception{
-        System.out.println(authenticationRequest.getEmail());
-        System.out.println(authenticationRequest.getPassword());
-
         try {
             authenticationManager.authenticate(new
                     UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(),
