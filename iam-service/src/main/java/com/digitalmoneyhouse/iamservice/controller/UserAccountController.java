@@ -4,6 +4,7 @@ import com.digitalmoneyhouse.iamservice.dto.ConfirmRegistration;
 import com.digitalmoneyhouse.iamservice.dto.GenericSucessResponse;
 import com.digitalmoneyhouse.iamservice.dto.UserAccountBody;
 import com.digitalmoneyhouse.iamservice.dto.UserAccountResponse;
+import com.digitalmoneyhouse.iamservice.exception.BusinessException;
 import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.model.VerificationToken;
 import com.digitalmoneyhouse.iamservice.service.UserAccountService;
@@ -15,8 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Locale;
 
 @RestController
 @RequestMapping("/users")
@@ -32,7 +31,7 @@ public class UserAccountController {
     private Environment env;
 
     @PostMapping
-    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) {
+    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException {
         VerificationToken verificationToken = service.save(user);
         mailSender.send(constructConfirmationEmail(verificationToken));
 

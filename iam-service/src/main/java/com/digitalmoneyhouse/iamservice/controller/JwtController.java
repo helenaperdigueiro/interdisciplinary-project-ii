@@ -1,13 +1,15 @@
 package com.digitalmoneyhouse.iamservice.controller;
 
+import com.digitalmoneyhouse.iamservice.dto.GenericSucessResponse;
 import com.digitalmoneyhouse.iamservice.dto.PasswordDto;
-import com.digitalmoneyhouse.iamservice.mail.GenericResponse;
+import com.digitalmoneyhouse.iamservice.exception.BusinessException;
+import com.digitalmoneyhouse.iamservice.exception.InvalidCredentialsException;
 import com.digitalmoneyhouse.iamservice.model.PasswordResetToken;
 import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.security.AuthenticationRequest;
 import com.digitalmoneyhouse.iamservice.security.JwtUtil;
 import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
-import com.digitalmoneyhouse.iamservice.service.PasswordService;
+import com.digitalmoneyhouse.iamservice.service.PasswordResetTokenService;
 import com.digitalmoneyhouse.iamservice.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -46,7 +47,7 @@ public class JwtController {
     private UserAccountService userAccountService;
 
     @Autowired
-    private PasswordService passwordService;
+    private PasswordResetTokenService passwordResetTokenService;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -62,10 +63,10 @@ public class JwtController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/tokens/revoke/{tokenId:.*}")
     @ResponseBody
-    public String revokeToken(@PathVariable String tokenId) {
+    public GenericSucessResponse revokeToken(@PathVariable String tokenId) {
        jwtTokenService.delete(tokenId);
-           return tokenId;
-            }
+           return new GenericSucessResponse("You have been logged out.");
+    }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -77,7 +78,7 @@ public class JwtController {
 
         }catch (Exception e) {
             e.printStackTrace();
-            throw new BadCredentialsException("Incorrect", e);
+            throw new InvalidCredentialsException();
         }
         final UserDetails userDetails =
                 userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
@@ -89,33 +90,31 @@ public class JwtController {
     }
 
     @PostMapping("/reset-password")
-    public GenericResponse resetPassword(HttpServletRequest request,
+    public GenericSucessResponse resetPassword(HttpServletRequest request,
                                          @RequestParam("email") String userEmail) throws Exception {
+        GenericSucessResponse response = new GenericSucessResponse(String.format("If there's an account associated with the e-mail %s we'll send you a link to reset the password.", userEmail));
         UserAccount user = userAccountService.findByEmail(userEmail);
         if (user == null) {
-            throw new Exception("User not found");
+            return response;
         }
         String token = UUID.randomUUID().toString();
-        passwordService.createPasswordResetTokenForUser(user, token);
+        passwordResetTokenService.createPasswordResetTokenForUser(user, token);
         mailSender.send(constructResetTokenEmail(apiBaseUrl,
                 request.getLocale(), token, user));
-        return new GenericResponse("RESETE A SENHA");
+        return response;
     }
 
     @PostMapping("/user/changePassword")
-    public GenericResponse showChangePasswordPage(Locale locale, Model model,
+    public GenericSucessResponse showChangePasswordPage(Locale locale, Model model,
                                          @RequestParam("token") String token,
-                                         @RequestBody PasswordDto passwordDto) {
-        String result = passwordService.validatePasswordResetToken(token);
+                                         @RequestBody PasswordDto passwordDto) throws BusinessException {
+        passwordResetTokenService.validatePasswordResetToken(token);
 
-        if(result != null) {
-            return new GenericResponse("banana");
-        }
-        PasswordResetToken passwordResetToken = passwordService.findByToken(token);
+        PasswordResetToken passwordResetToken = passwordResetTokenService.findByToken(token);
         UserAccount user = userAccountService.getUserByPasswordResetToken(passwordResetToken);
-            userAccountService.changeUserPassword(user, passwordDto.getNewPassword());
-            passwordService.deleteToken(passwordResetToken);
-            return new GenericResponse("Senha atualizada");
+        userAccountService.changeUserPassword(user, passwordDto.getNewPassword());
+        passwordResetTokenService.deleteToken(passwordResetToken);
+        return new GenericSucessResponse("Your password has been changed successfully.");
     }
 
     private SimpleMailMessage constructResetTokenEmail(

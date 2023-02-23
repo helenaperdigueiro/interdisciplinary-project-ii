@@ -3,6 +3,10 @@ package com.digitalmoneyhouse.iamservice.service;
 import com.digitalmoneyhouse.iamservice.dto.ConfirmRegistration;
 import com.digitalmoneyhouse.iamservice.dto.UserAccountBody;
 import com.digitalmoneyhouse.iamservice.dto.UserAccountResponse;
+import com.digitalmoneyhouse.iamservice.exception.AccountConfirmationException;
+import com.digitalmoneyhouse.iamservice.exception.BusinessException;
+import com.digitalmoneyhouse.iamservice.exception.CpfAlreadyInUseException;
+import com.digitalmoneyhouse.iamservice.exception.EmailAlreadyInUseException;
 import com.digitalmoneyhouse.iamservice.model.PasswordResetToken;
 import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.model.VerificationToken;
@@ -10,7 +14,6 @@ import com.digitalmoneyhouse.iamservice.repository.RoleRepository;
 import com.digitalmoneyhouse.iamservice.repository.UserAccountRepository;
 import com.digitalmoneyhouse.iamservice.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +38,8 @@ public class UserAccountService {
     private VerificationTokenRepository verificationTokenRepository;
 
     @Transactional
-    public VerificationToken save(UserAccountBody userAccountBody) {
-        existsByEmailOrCPF(userAccountBody.getEmail(), userAccountBody.getCpf());
+    public VerificationToken save(UserAccountBody userAccountBody) throws BusinessException {
+        existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());
         userAccountBody.setPassword(encryptedPassword);
         UserAccount userModel = new UserAccount(userAccountBody);
@@ -59,7 +62,7 @@ public class UserAccountService {
                 return new UserAccountResponse(userAccount);
             }
         }
-        throw new Exception("Unexpected error while confirming account");
+        throw new AccountConfirmationException();
     }
 
     public UserAccount findByEmail(String email) {
@@ -75,18 +78,18 @@ public class UserAccountService {
         repository.save(user);
     }
 
-    public void existsByEmailOrCPF(String email, String cpf) {
-        if (repository.existsByEmail(email)) {
-            throw new DataIntegrityViolationException(String.format("Value %s for field E-mail is already in use", email));
-        }
+    public void existsByCpfOrEmail(String cpf, String email) throws BusinessException {
         if (repository.existsByCpf(cpf)) {
-            throw new DataIntegrityViolationException(String.format("Value %s for field CPF is already in use", cpf));
+            throw new CpfAlreadyInUseException(cpf);
+        }
+        if (repository.existsByEmail(email)) {
+            throw new EmailAlreadyInUseException(email);
         }
     }
 
     public VerificationToken createVerificationCode(UserAccount userAccount) {
-        Random generate = new Random();
-        String verificationCode = String.valueOf(generate.nextInt(100000,1000000));
+        Random generator = new Random();
+        String verificationCode = String.valueOf(generator.nextInt(100000,1000000));
         VerificationToken verificationToken = new VerificationToken(verificationCode, userAccount);
         return verificationTokenRepository.save(verificationToken);
     }

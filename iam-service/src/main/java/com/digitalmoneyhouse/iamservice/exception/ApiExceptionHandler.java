@@ -11,7 +11,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,5 +80,13 @@ public class ApiExceptionHandler {
             }
         }
         return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> businessException(BusinessException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(ex.getStatusCode());
+        response.setMessage(ex.getMessage());
+        return ResponseEntity.status(ex.getStatusCode()).body(response);
     }
 }
