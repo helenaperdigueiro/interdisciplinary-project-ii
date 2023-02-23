@@ -38,11 +38,10 @@ public class SecurityConfiguration<MyUserDetailsService, JwtRequestFilter> exten
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.GET,"/tokens").permitAll()
                 .antMatchers(HttpMethod.POST,"/users/**").permitAll()
-                .antMatchers("/user/**").permitAll()
                 .antMatchers("/authenticate/**").permitAll()
                 .antMatchers("/tokens/revoke/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/reset-password").permitAll()
-
+                .antMatchers(HttpMethod.PUT, "/update-password").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

@@ -1,18 +1,12 @@
 package com.digitalmoneyhouse.iamservice.service;
 
-import com.digitalmoneyhouse.iamservice.dto.ConfirmRegistration;
-import com.digitalmoneyhouse.iamservice.dto.UserAccountBody;
-import com.digitalmoneyhouse.iamservice.dto.UserAccountResponse;
-import com.digitalmoneyhouse.iamservice.exception.AccountConfirmationException;
-import com.digitalmoneyhouse.iamservice.exception.BusinessException;
-import com.digitalmoneyhouse.iamservice.exception.CpfAlreadyInUseException;
-import com.digitalmoneyhouse.iamservice.exception.EmailAlreadyInUseException;
+import com.digitalmoneyhouse.iamservice.dto.*;
+import com.digitalmoneyhouse.iamservice.exception.*;
 import com.digitalmoneyhouse.iamservice.model.PasswordResetToken;
 import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.model.VerificationToken;
 import com.digitalmoneyhouse.iamservice.repository.RoleRepository;
 import com.digitalmoneyhouse.iamservice.repository.UserAccountRepository;
-import com.digitalmoneyhouse.iamservice.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Random;
 
 @Service
 public class UserAccountService {
@@ -35,30 +28,39 @@ public class UserAccountService {
     private UserAccountRepository repository;
 
     @Autowired
-    private VerificationTokenRepository verificationTokenRepository;
+    private VerificationTokenService verificationTokenService;
+
+    @Autowired
+    private PasswordResetTokenService passwordResetTokenService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
-    public VerificationToken save(UserAccountBody userAccountBody) throws BusinessException {
+    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException {
         existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());
         userAccountBody.setPassword(encryptedPassword);
         UserAccount userModel = new UserAccount(userAccountBody);
         userModel.setRoles(Arrays.asList(RoleRepository.getById(1)));
         userModel = repository.save(userModel);
-        return createVerificationCode(userModel);
+        VerificationToken verificationToken =  verificationTokenService.create(userModel);
+        emailService.sendAccountConfirmationCode(verificationToken);
+        return new GenericSucessResponse("Please confirm your account.");
     }
 
     @Transactional
-    public UserAccountResponse confirmRegistration(ConfirmRegistration confirmRegistration) throws Exception {
-        Boolean isUserEmail = verificationTokenRepository.existsByVerificationCodeAndUserAccountEmail(confirmRegistration.getVerificationCode(), confirmRegistration.getEmail());
+    public UserAccountResponse confirmRegistration(ConfirmRegistration confirmRegistration) throws BusinessException {
+        String verificationCode = confirmRegistration.getVerificationCode();
+        Boolean isUserEmail = verificationTokenService.existsByVerificationCodeAndUserAccountEmail(verificationCode, confirmRegistration.getEmail());
         if (isUserEmail) {
-            VerificationToken verificationToken = verificationTokenRepository.findByVerificationCode(confirmRegistration.getVerificationCode());
+            VerificationToken verificationToken = verificationTokenService.findByVerificationCode(verificationCode);
             Boolean isValid = verificationToken.getExpiryDate().isAfter(LocalDateTime.now());
             if (isValid) {
                 UserAccount userAccount = verificationToken.getUserAccount();
                 userAccount.setIsEnabled(true);
                 userAccount = repository.save(userAccount);
-                verificationTokenRepository.delete(verificationToken);
+                verificationTokenService.deleteById(verificationToken.getId());
                 return new UserAccountResponse(userAccount);
             }
         }
@@ -69,13 +71,17 @@ public class UserAccountService {
         return repository.findByEmail(email);
     }
 
-    public UserAccount getUserByPasswordResetToken(PasswordResetToken passwordResetToken) {
+    public UserAccount findByPasswordResetToken(PasswordResetToken passwordResetToken) {
         return repository.findByToken(passwordResetToken.getToken());
     }
 
-    public void changeUserPassword(UserAccount user, String password) {
-        user.setPassword(bCryptPasswordEncoder.encode(password));
+    public GenericSucessResponse changeUserPassword(String resetPasswordToken,PasswordDto passwordDto) throws BusinessException {
+        PasswordResetToken passwordResetToken = passwordResetTokenService.validatePasswordResetToken(resetPasswordToken);
+        UserAccount user = findByPasswordResetToken(passwordResetToken);
+        user.setPassword(bCryptPasswordEncoder.encode(passwordDto.getNewPassword()));
         repository.save(user);
+        passwordResetTokenService.deleteToken(passwordResetToken);
+        return new GenericSucessResponse("Your password has been changed successfully.");
     }
 
     public void existsByCpfOrEmail(String cpf, String email) throws BusinessException {
@@ -87,10 +93,8 @@ public class UserAccountService {
         }
     }
 
-    public VerificationToken createVerificationCode(UserAccount userAccount) {
-        Random generator = new Random();
-        String verificationCode = String.valueOf(generator.nextInt(100000,1000000));
-        VerificationToken verificationToken = new VerificationToken(verificationCode, userAccount);
-        return verificationTokenRepository.save(verificationToken);
+    public GenericSucessResponse resetPassword(String email) {
+        UserAccount user = findByEmail(email);
+        return passwordResetTokenService.reset(user);
     }
 }

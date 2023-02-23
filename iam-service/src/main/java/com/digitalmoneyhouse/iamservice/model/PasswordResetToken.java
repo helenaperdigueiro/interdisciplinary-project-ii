@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -27,9 +28,13 @@ public class PasswordResetToken {
 
     private LocalDateTime expiryDate;
 
-    public PasswordResetToken(String token, UserAccount userAccount) {
-        this.token = token;
+    public PasswordResetToken(UserAccount userAccount) {
+        this.token = generateToken();
         this.userAccount = userAccount;
         this.expiryDate = LocalDateTime.now().plusMinutes(EXPIRATION_IN_MINUTES);
+    }
+
+    public String generateToken() {
+        return UUID.randomUUID().toString();
     }
 }

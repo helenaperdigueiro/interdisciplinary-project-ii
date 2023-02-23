@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Entity
 @Getter
@@ -26,9 +27,14 @@ public class VerificationToken {
 
     private LocalDateTime expiryDate;
 
-    public VerificationToken(String verificationCode, UserAccount userAccount) {
-        this.verificationCode = verificationCode;
+    public VerificationToken(UserAccount userAccount) {
+        this.verificationCode = generateVerificationCode();
         this.userAccount = userAccount;
         this.expiryDate = LocalDateTime.now().plusMinutes(EXPIRATION_IN_MINUTES);
+    }
+
+    public String generateVerificationCode() {
+        Random generator = new Random();
+        return String.valueOf(generator.nextInt(100000,1000000));
     }
 }
