@@ -7,6 +7,7 @@ import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.model.VerificationToken;
 import com.digitalmoneyhouse.iamservice.repository.RoleRepository;
 import com.digitalmoneyhouse.iamservice.repository.UserAccountRepository;
+import com.digitalmoneyhouse.iamservice.util.NullUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Service
 public class UserAccountService {
@@ -96,5 +98,26 @@ public class UserAccountService {
     public GenericSucessResponse resetPassword(String email) {
         UserAccount user = findByEmail(email);
         return passwordResetTokenService.reset(user);
+    }
+
+    public UserProfile findById(Integer id) throws BusinessException{
+        UserAccount userAccount = repository.findById(id).orElseThrow(UserNotFoundException::new);
+        return new UserProfile(userAccount);
+    }
+
+    public UserAccountResponse editById(Integer id, UserAccountPatch userAccountPatch) throws BusinessException {
+        UserAccount userAccount = repository.findById(id).orElseThrow(UserNotFoundException::new);
+
+//        if (userAccountPatch.getFirstName() != null) {
+//            userAccount.setFirstName(userAccountPatch.getFirstName());
+//        }
+
+        NullUtils.updateIfPresent(userAccount::setFirstName, userAccountPatch.getFirstName());
+        NullUtils.updateIfPresent(userAccount::setLastName, userAccountPatch.getLastName());
+        NullUtils.updateIfPresent(userAccount::setEmail, userAccountPatch.getEmail());
+        NullUtils.updateIfPresent(userAccount::setPhoneNumber, userAccountPatch.getPhoneNumber());
+        NullUtils.updateIfPresent(userAccount::setPassword, userAccountPatch.getPassword());
+
+        return new UserAccountResponse(repository.save(userAccount));
     }
 }

@@ -1,9 +1,6 @@
 package com.digitalmoneyhouse.iamservice.controller;
 
-import com.digitalmoneyhouse.iamservice.dto.ConfirmRegistration;
-import com.digitalmoneyhouse.iamservice.dto.GenericSucessResponse;
-import com.digitalmoneyhouse.iamservice.dto.UserAccountBody;
-import com.digitalmoneyhouse.iamservice.dto.UserAccountResponse;
+import com.digitalmoneyhouse.iamservice.dto.*;
 import com.digitalmoneyhouse.iamservice.exception.BusinessException;
 import com.digitalmoneyhouse.iamservice.service.UserAccountService;
 import jakarta.validation.Valid;
@@ -21,7 +18,7 @@ public class UserAccountController {
 
     @PostMapping
     public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException {
-        return ResponseEntity.status(201).body(userAccountServiceservice.save(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userAccountServiceservice.save(user));
     }
 
     @PostMapping("/confirm-registration")
@@ -29,4 +26,13 @@ public class UserAccountController {
         return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.confirmRegistration(confirmRegistration));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserProfile> findById(@PathVariable Integer id) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.findById(id));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserAccountResponse> editById(@PathVariable Integer id, @RequestBody UserAccountPatch userAccountPatch) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.editById(id, userAccountPatch));
+    }
 }
