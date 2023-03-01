@@ -1,5 +1,6 @@
 package com.digitalmoneyhouse.iamservice.service;
 
+import com.digitalmoneyhouse.iamservice.client.AccountClient;
 import com.digitalmoneyhouse.iamservice.dto.*;
 import com.digitalmoneyhouse.iamservice.exception.*;
 import com.digitalmoneyhouse.iamservice.model.PasswordResetToken;
@@ -13,12 +14,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
 @Service
 public class UserAccountService {
+    @Autowired
+    private AccountClient accountClient;
 
     @Autowired
     private RoleRepository RoleRepository;
@@ -39,13 +44,14 @@ public class UserAccountService {
     private EmailService emailService;
 
     @Transactional
-    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException {
+    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());
         userAccountBody.setPassword(encryptedPassword);
         UserAccount userModel = new UserAccount(userAccountBody);
         userModel.setRoles(Arrays.asList(RoleRepository.getById(1)));
         userModel = repository.save(userModel);
+        accountClient.createAccount(userModel.getId());
         VerificationToken verificationToken =  verificationTokenService.create(userModel);
         emailService.sendAccountConfirmationCode(verificationToken);
         return new GenericSucessResponse("Please confirm your account.");

@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -17,7 +20,7 @@ public class UserAccountController {
     private UserAccountService userAccountServiceservice;
 
     @PostMapping
-    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException {
+    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         return ResponseEntity.status(HttpStatus.CREATED).body(userAccountServiceservice.save(user));
     }
 

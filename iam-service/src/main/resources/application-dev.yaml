@@ -34,3 +34,6 @@ email-service:
 
 api:
   baseUrl: http://localhost:8080
+
+accountService:
+  baseUrl: http://localhost:8081
