@@ -12,4 +12,5 @@ public interface CardRepository extends JpaRepository<Card,Integer> {
     boolean existsByNumber(String number);
     List<Card> findByAccountId(Integer accountId);
     Optional<Card> findByIdAndAccountId(Integer cardId, Integer accountId);
+    void deleteByIdAndAccountId(Integer cardId, Integer accountId);
 }

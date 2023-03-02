@@ -43,4 +43,10 @@ public class CardService {
         return cardRepository.findByIdAndAccountId(cardId, accountId).orElseThrow(CardNotFoundException::new);
     }
 
+    @Transactional
+    public void deleteByIdAndAccountId(Integer cardId, Integer accountId) throws BusinessException {
+        cardRepository.findByIdAndAccountId(cardId, accountId).orElseThrow(CardNotFoundException::new);
+        cardRepository.deleteByIdAndAccountId(cardId, accountId);
+    }
+
 }

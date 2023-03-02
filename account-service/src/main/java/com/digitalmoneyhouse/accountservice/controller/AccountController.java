@@ -47,4 +47,10 @@ public class AccountController {
     public ResponseEntity<Card> findByCardIdAndAccountId(@PathVariable Integer cardId, @PathVariable Integer accountId) throws BusinessException {
         return ResponseEntity.status(HttpStatus.OK).body(cardService.findByIdAndAccountId(cardId, accountId));
     }
+
+    @DeleteMapping("/{accountId}/cards/{cardId}")
+    public ResponseEntity<Void> deleteByCardAndIdAccountId(@PathVariable Integer cardId, @PathVariable Integer accountId) throws BusinessException {
+        cardService.deleteByIdAndAccountId(cardId, accountId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 }
