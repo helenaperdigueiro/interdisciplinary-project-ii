@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
@@ -26,13 +28,23 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountService.save(account));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Account> findById(@PathVariable Integer id) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(accountService.findById(id));
+    @GetMapping("/{accountId}")
+    public ResponseEntity<Account> findById(@PathVariable Integer accountId) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(accountService.findById(accountId));
     }
 
-    @PostMapping("/{id}/cards")
-    public ResponseEntity<Card> saveCard(@RequestBody CardRequest card, @PathVariable Integer id) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.save(card, id));
+    @PostMapping("/{accountId}/cards")
+    public ResponseEntity<Card> saveCard(@RequestBody CardRequest card, @PathVariable Integer accountId) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.save(card, accountId));
+    }
+
+    @GetMapping("/{accountId}/cards")
+    public ResponseEntity<List<Card>> findByAccountId(@PathVariable Integer accountId) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(cardService.findByAccountId(accountId));
+    }
+
+    @GetMapping("/{accountId}/cards/{cardId}")
+    public ResponseEntity<Card> findByCardIdAndAccountId(@PathVariable Integer cardId, @PathVariable Integer accountId) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(cardService.findByIdAndAccountId(cardId, accountId));
     }
 }
