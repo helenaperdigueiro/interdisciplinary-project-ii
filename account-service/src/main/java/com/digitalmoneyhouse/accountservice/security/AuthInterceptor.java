@@ -23,11 +23,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         String token = request.getHeader("Authorization");
-        if (token == null) {
+        if (token == null || token.length() <= 7) {
             throw new AuthorizationHeaderNotFoundException();
-        } else {
-            token = token.substring(7);
         }
+        token = token.substring(7);
         URI url = new URI("http://localhost:8080/validate-token");
         Gson gson = new Gson();
         JsonObject body = new JsonObject();

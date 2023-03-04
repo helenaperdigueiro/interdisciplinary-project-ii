@@ -38,12 +38,12 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}")
-    public ResponseEntity<Account> findById(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer accountId) throws BusinessException, URISyntaxException, IOException, InterruptedException {
+    public ResponseEntity<Account> findById(@PathVariable Integer accountId) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         return ResponseEntity.status(HttpStatus.OK).body(accountService.findById(accountId));
     }
 
     @PostMapping("/{accountId}/cards")
-    public ResponseEntity<Card> saveCard(@RequestHeader("Authorization") String bearerToken, @RequestBody CardRequest card, @PathVariable Integer accountId) throws BusinessException, URISyntaxException, IOException, InterruptedException {
+    public ResponseEntity<Card> saveCard(@RequestBody CardRequest card, @PathVariable Integer accountId) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         return ResponseEntity.status(HttpStatus.CREATED).body(cardService.save(card, accountId));
     }
 
