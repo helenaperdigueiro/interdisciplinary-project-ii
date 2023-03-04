@@ -4,6 +4,7 @@ import com.digitalmoneyhouse.iamservice.dto.GenericSucessResponse;
 import com.digitalmoneyhouse.iamservice.dto.PasswordDto;
 import com.digitalmoneyhouse.iamservice.exception.BusinessException;
 import com.digitalmoneyhouse.iamservice.exception.InvalidCredentialsException;
+import com.digitalmoneyhouse.iamservice.exception.InvalidTokenException;
 import com.digitalmoneyhouse.iamservice.model.JwtToken;
 import com.digitalmoneyhouse.iamservice.security.AuthenticationRequest;
 import com.digitalmoneyhouse.iamservice.security.JwtUtil;
@@ -42,7 +43,7 @@ public class JwtController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/tokens/revoke/{tokenId:.*}")
     @ResponseBody
-    public GenericSucessResponse revokeToken(@PathVariable String tokenId) {
+    public GenericSucessResponse revokeToken(@PathVariable String tokenId) throws InvalidTokenException {
        jwtTokenService.delete(tokenId);
            return new GenericSucessResponse("You have been logged out.");
     }

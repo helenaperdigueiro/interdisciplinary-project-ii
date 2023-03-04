@@ -17,25 +17,25 @@ import java.net.URISyntaxException;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserAccountController {
     @Autowired
-    private UserAccountService userAccountServiceservice;
+    private UserAccountService userAccountService;
 
     @PostMapping
     public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException, URISyntaxException, IOException, InterruptedException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userAccountServiceservice.save(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userAccountService.save(user));
     }
 
     @PostMapping("/confirm-registration")
     public ResponseEntity<UserAccountResponse> confirmRegistration(@RequestBody ConfirmRegistration confirmRegistration) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.confirmRegistration(confirmRegistration));
+        return ResponseEntity.status(HttpStatus.OK).body(userAccountService.confirmRegistration(confirmRegistration));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserProfile> findById(@PathVariable Integer id) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.findById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(userAccountService.findById(id));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<UserAccountResponse> editById(@PathVariable Integer id, @RequestBody UserAccountPatch userAccountPatch) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(userAccountServiceservice.editById(id, userAccountPatch));
+        return ResponseEntity.status(HttpStatus.OK).body(userAccountService.editById(id, userAccountPatch));
     }
 }
