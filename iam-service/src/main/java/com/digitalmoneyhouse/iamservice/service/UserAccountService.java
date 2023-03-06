@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Optional;
 
 @Service
 public class UserAccountService {
@@ -43,7 +42,7 @@ public class UserAccountService {
     @Autowired
     private EmailService emailService;
 
-    @Transactional
+    @Transactional(rollbackOn = BusinessException.class)
     public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BusinessException extends Exception{
+public class BusinessException extends Exception {
     private Integer statusCode;
     private String message;
 
