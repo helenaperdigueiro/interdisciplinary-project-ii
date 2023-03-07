@@ -2,9 +2,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/digital_money_house?createDatabaseIfNotExist=true&serverTimezone=UTC
-    username: root
-    password: root
+    url: jdbc:mysql://${IAM_DATABASE_HOST:localhost}:${IAM_DATABASE_PORT:3306}/${IAM_DATABASE_NAME:iam_database}?createDatabaseIfNotExist=true&serverTimezone=UTC
+    username: ${IAM_DATABASE_USER:root}
+    password: ${IAM_DATABASE_PASSWORD:root}
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
@@ -25,12 +25,15 @@ spring:
       matching-strategy: ant_path_matcher
 
 email-service:
-  host:
-  port:
-  ssl:
-  tls:
-  user:
-  password:
+  host: ${EMAIL_HOST:""}
+  port: ${EMAIL_PORT:""}
+  ssl: ${EMAIL_SSL:""}
+  tls: ${EMAIL_TLS:""}
+  user: ${EMAIL_USER:""}
+  password: ${EMAIL_PASSWORD:""}
 
 api:
-  baseUrl:
+  baseUrl: ${IAM_BASE_URL:http://localhost:8080}
+
+accountService:
+  baseUrl: ${ACCOUNTS_BASE_URL:http://localhost:8081}
