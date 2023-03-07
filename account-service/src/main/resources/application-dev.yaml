@@ -1,8 +1,11 @@
+server:
+  port: 8081
+
 spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/digital_money_house?createDatabaseIfNotExist=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/accounts_db?createDatabaseIfNotExist=true&serverTimezone=UTC
     username: root
     password: root
 
@@ -24,16 +27,5 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
-email-service:
-  host:
-  port:
-  ssl:
-  tls:
-  user:
-  password:
-
-api:
-  baseUrl: http://localhost:8080
-
-accountService:
-  baseUrl: http://localhost:8081
+iamService:
+  baseUrl: http://localhost:8080/validate-token
