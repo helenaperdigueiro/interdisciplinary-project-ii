@@ -1,5 +1,6 @@
 package com.digitalmoneyhouse.iamservice.service;
 
+import com.digitalmoneyhouse.iamservice.client.AccountClient;
 import com.digitalmoneyhouse.iamservice.dto.*;
 import com.digitalmoneyhouse.iamservice.exception.*;
 import com.digitalmoneyhouse.iamservice.model.PasswordResetToken;
@@ -7,16 +8,21 @@ import com.digitalmoneyhouse.iamservice.model.UserAccount;
 import com.digitalmoneyhouse.iamservice.model.VerificationToken;
 import com.digitalmoneyhouse.iamservice.repository.RoleRepository;
 import com.digitalmoneyhouse.iamservice.repository.UserAccountRepository;
+import com.digitalmoneyhouse.iamservice.util.NullUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Service
 public class UserAccountService {
+    @Autowired
+    private AccountClient accountClient;
 
     @Autowired
     private RoleRepository RoleRepository;
@@ -36,14 +42,15 @@ public class UserAccountService {
     @Autowired
     private EmailService emailService;
 
-    @Transactional
-    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException {
+    @Transactional(rollbackOn = BusinessException.class)
+    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());
         userAccountBody.setPassword(encryptedPassword);
         UserAccount userModel = new UserAccount(userAccountBody);
         userModel.setRoles(Arrays.asList(RoleRepository.getById(1)));
         userModel = repository.save(userModel);
+        accountClient.createAccount(userModel.getId());
         VerificationToken verificationToken =  verificationTokenService.create(userModel);
         emailService.sendAccountConfirmationCode(verificationToken);
         return new GenericSucessResponse("Please confirm your account.");
@@ -96,5 +103,26 @@ public class UserAccountService {
     public GenericSucessResponse resetPassword(String email) {
         UserAccount user = findByEmail(email);
         return passwordResetTokenService.reset(user);
+    }
+
+    public UserProfile findById(Integer id) throws BusinessException{
+        UserAccount userAccount = repository.findById(id).orElseThrow(UserNotFoundException::new);
+        return new UserProfile(userAccount);
+    }
+
+    public UserAccountResponse editById(Integer id, UserAccountPatch userAccountPatch) throws BusinessException {
+        UserAccount userAccount = repository.findById(id).orElseThrow(UserNotFoundException::new);
+
+//        if (userAccountPatch.getFirstName() != null) {
+//            userAccount.setFirstName(userAccountPatch.getFirstName());
+//        }
+
+        NullUtils.updateIfPresent(userAccount::setFirstName, userAccountPatch.getFirstName());
+        NullUtils.updateIfPresent(userAccount::setLastName, userAccountPatch.getLastName());
+        NullUtils.updateIfPresent(userAccount::setEmail, userAccountPatch.getEmail());
+        NullUtils.updateIfPresent(userAccount::setPhoneNumber, userAccountPatch.getPhoneNumber());
+        NullUtils.updateIfPresent(userAccount::setPassword, userAccountPatch.getPassword());
+
+        return new UserAccountResponse(repository.save(userAccount));
     }
 }

@@ -1,5 +1,6 @@
 package com.digitalmoneyhouse.iamservice.security;
 
+import com.digitalmoneyhouse.iamservice.model.JwtToken;
 import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -61,6 +62,15 @@ public class JwtUtil {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUserName(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && service.isValid(token));
+    }
+
+    public Boolean validateToken(JwtToken token) {
+        try {
+            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token.getToken());
+        } catch(Exception exc) {
+            return false;
+        }
+        return service.isValid(token.getToken());
     }
 
     private boolean isTokenExpired(String token) {

@@ -4,6 +4,8 @@ import com.digitalmoneyhouse.iamservice.dto.GenericSucessResponse;
 import com.digitalmoneyhouse.iamservice.dto.PasswordDto;
 import com.digitalmoneyhouse.iamservice.exception.BusinessException;
 import com.digitalmoneyhouse.iamservice.exception.InvalidCredentialsException;
+import com.digitalmoneyhouse.iamservice.exception.InvalidTokenException;
+import com.digitalmoneyhouse.iamservice.model.JwtToken;
 import com.digitalmoneyhouse.iamservice.security.AuthenticationRequest;
 import com.digitalmoneyhouse.iamservice.security.JwtUtil;
 import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
@@ -41,7 +43,7 @@ public class JwtController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/tokens/revoke/{tokenId:.*}")
     @ResponseBody
-    public GenericSucessResponse revokeToken(@PathVariable String tokenId) {
+    public GenericSucessResponse revokeToken(@PathVariable String tokenId) throws InvalidTokenException {
        jwtTokenService.delete(tokenId);
            return new GenericSucessResponse("You have been logged out.");
     }
@@ -62,7 +64,7 @@ public class JwtController {
                 userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
         final String jwt = jwtUtil.generateToken(userDetails);
         Map<String, String> tokenResponse = new HashMap<>();
-        tokenResponse.put("acessToken", jwt);
+        tokenResponse.put("accessToken", jwt);
         jwtTokenService.save(jwt);
         return ResponseEntity.ok(tokenResponse);
     }
@@ -80,4 +82,12 @@ public class JwtController {
         return ResponseEntity.status(HttpStatus.OK).body(userAccountService.changeUserPassword(token, passwordDto));
     }
 
+    @PostMapping("/validate-token")
+    public ResponseEntity<Void> validateToken(@RequestBody JwtToken token) {
+        Boolean isValid = jwtUtil.validateToken(token);
+        System.out.println(token);
+        System.out.println(isValid);
+        return isValid ?
+                ResponseEntity.status(HttpStatus.OK).build() : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }

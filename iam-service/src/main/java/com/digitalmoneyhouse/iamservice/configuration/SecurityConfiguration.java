@@ -38,6 +38,7 @@ public class SecurityConfiguration<MyUserDetailsService, JwtRequestFilter> exten
         http.csrf().disable().authorizeRequests()
                 .antMatchers(HttpMethod.GET,"/tokens").permitAll()
                 .antMatchers(HttpMethod.POST,"/users/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/validate-token/**").permitAll()
                 .antMatchers("/authenticate/**").permitAll()
                 .antMatchers("/tokens/revoke/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/reset-password").permitAll()
