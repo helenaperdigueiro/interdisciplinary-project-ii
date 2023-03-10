@@ -3,6 +3,7 @@ package com.digitalmoneyhouse.accountservice.controller;
 
 import com.digitalmoneyhouse.accountservice.dto.CardRequest;
 import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
+import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
 import com.digitalmoneyhouse.accountservice.model.Account;
 import com.digitalmoneyhouse.accountservice.model.Card;
@@ -65,5 +66,14 @@ public class AccountController {
     @PostMapping("/{accountId}/transactions")
     public ResponseEntity<Transaction> saveTransaction(@PathVariable Integer accountId, @Valid @RequestBody TransactionRequest transactionRequest) throws BusinessException {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.save(transactionRequest, accountId));
+    }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<List<TransactionResponse>> findTransactions(
+            @PathVariable Integer accountId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Integer limit
+    ) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, limit));
     }
 }
