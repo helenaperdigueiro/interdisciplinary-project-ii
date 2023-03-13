@@ -1,7 +1,7 @@
 package com.digitalmoneyhouse.accountservice.controller;
 
-
 import com.digitalmoneyhouse.accountservice.dto.CardRequest;
+import com.digitalmoneyhouse.accountservice.dto.ReceiptContainer;
 import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
 import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
@@ -13,10 +13,13 @@ import com.digitalmoneyhouse.accountservice.service.CardService;
 import com.digitalmoneyhouse.accountservice.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -75,5 +78,19 @@ public class AccountController {
             @RequestParam(required = false) Integer limit
     ) throws BusinessException {
         return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, limit));
+    }
+
+    @GetMapping("/{accountId}/transactions/{transactionId}")
+    public ResponseEntity<TransactionResponse> findTransactionById(@PathVariable Integer accountId, @PathVariable Integer transactionId) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.findByIdAndAccountId(transactionId, accountId));
+    }
+
+    @GetMapping("/{accountId}/transactions/{transactionId}/receipt")
+    public ResponseEntity<byte[]> getReceipt(@PathVariable Integer accountId, @PathVariable Integer transactionId) throws IOException, BusinessException {
+        ReceiptContainer receiptContainer = transactionService.getTransferenceReceipt(transactionId, accountId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.pdf", receiptContainer.getTransactionCode()));
+       return ResponseEntity.ok().headers(headers).body(receiptContainer.getBytes());
     }
 }

@@ -1,14 +1,10 @@
 package com.digitalmoneyhouse.accountservice.model;
 
-import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -33,12 +29,15 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
+    @Column(nullable = false)
+    private String transactionCode;
     private String description;
 
     public Transaction(Double amount, TransactionType type, String description) {
         this.amount = amount;
         this.type = type;
         this.date = LocalDateTime.now();
+        this.transactionCode = UUID.randomUUID().toString().toUpperCase();
         this.description = description;
     }
 }

@@ -11,18 +11,25 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
 
     @Query(value = "SELECT\n" +
-            "\ttransactions.id,\n" +
-            "    transactions.amount,\n" +
-            "    transactions.date,\n" +
-            "    transactions.description,\n" +
-            "    transactions.type,\n" +
-            "    deposits.card_id,\n" +
-            "    deposits.account_id,\n" +
-            "    transferences.origin_account_id,\n" +
-            "    transferences.destination_account_id\n" +
+            "transactions.id,\n" +
+            "transactions.amount,\n" +
+            "transactions.date,\n" +
+            "transactions.type,\n" +
+            "transactions.transaction_code,\n" +
+            "transactions.description,\n" +
+            "deposits.card_id,\n" +
+            "cards.number,\n" +
+            "deposits.account_id,\n" +
+            "accounts.account_number,\n" +
+            "transferences.origin_account_id,\n" +
+            "transferences.destination_account_id\n" +
             "FROM transactions\n" +
             "LEFT JOIN deposits\n" +
-            "ON transactions.id = deposits.id \n" +
+            "ON transactions.id = deposits.id\n" +
+            "LEFT JOIN accounts\n" +
+            "ON deposits.account_id = accounts.id\n" +
+            "LEFT JOIN cards\n" +
+            "ON deposits.card_id = cards.id\n" +
             "LEFT JOIN transferences\n" +
             "ON transactions.id = transferences.id\n" +
             "WHERE deposits.account_id = ?1 OR transferences.origin_account_id = ?1 OR transferences.destination_account_id = ?1\n" +
@@ -31,18 +38,25 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     List<Object[]> findALlByAccountId(Integer accountId, Integer limit);
 
     @Query(value = "SELECT\n" +
-            "\ttransactions.id,\n" +
-            "    transactions.amount,\n" +
-            "    transactions.date,\n" +
-            "    transactions.description,\n" +
-            "    transactions.type,\n" +
-            "    deposits.card_id,\n" +
-            "    deposits.account_id,\n" +
-            "    transferences.origin_account_id,\n" +
-            "    transferences.destination_account_id\n" +
+            "transactions.id,\n" +
+            "transactions.amount,\n" +
+            "transactions.date,\n" +
+            "transactions.type,\n" +
+            "transactions.transaction_code,\n" +
+            "transactions.description,\n" +
+            "deposits.card_id,\n" +
+            "cards.number,\n" +
+            "deposits.account_id,\n" +
+            "accounts.account_number,\n" +
+            "transferences.origin_account_id,\n" +
+            "transferences.destination_account_id\n" +
             "FROM transactions\n" +
             "LEFT JOIN deposits\n" +
-            "ON transactions.id = deposits.id \n" +
+            "ON transactions.id = deposits.id\n" +
+            "LEFT JOIN accounts\n" +
+            "ON deposits.account_id = accounts.id\n" +
+            "LEFT JOIN cards\n" +
+            "ON deposits.card_id = cards.id\n" +
             "LEFT JOIN transferences\n" +
             "ON transactions.id = transferences.id\n" +
             "WHERE (deposits.account_id = ?1 OR transferences.origin_account_id = ?1 OR transferences.destination_account_id = ?1)\n" +
@@ -50,4 +64,30 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "ORDER BY date DESC\n" +
             "LIMIT ?3", nativeQuery = true)
     List<Object[]> findALlByAccountIdAndType(Integer accountId, String type, Integer limit);
+
+    @Query(value = "SELECT\n" +
+            "transactions.id,\n" +
+            "transactions.amount,\n" +
+            "transactions.date,\n" +
+            "transactions.type,\n" +
+            "transactions.transaction_code,\n" +
+            "transactions.description,\n" +
+            "deposits.card_id,\n" +
+            "cards.number,\n" +
+            "deposits.account_id,\n" +
+            "accounts.account_number,\n" +
+            "transferences.origin_account_id,\n" +
+            "transferences.destination_account_id\n" +
+            "FROM transactions\n" +
+            "LEFT JOIN deposits\n" +
+            "ON transactions.id = deposits.id\n" +
+            "LEFT JOIN accounts\n" +
+            "ON deposits.account_id = accounts.id\n" +
+            "LEFT JOIN cards\n" +
+            "ON deposits.card_id = cards.id\n" +
+            "LEFT JOIN transferences\n" +
+            "ON transactions.id = transferences.id\n" +
+            "WHERE transactions.id = ?1\n" +
+            "AND (deposits.account_id = ?2 OR transferences.origin_account_id = ?2 OR transferences.destination_account_id = ?2)", nativeQuery = true)
+    List<Object[]> findByIdAndAccountId(Integer transactionId, Integer accountID);
 }

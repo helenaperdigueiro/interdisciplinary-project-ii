@@ -16,4 +16,7 @@ public interface AccountRepository extends JpaRepository<Account,Integer> {
 
     @Query("SELECT a.accountNumber FROM Account a WHERE a.id = :id")
     String findAccountNumberById(@Param("id") Integer accountId);
+
+    @Query("SELECT a.userFullName FROM Account a WHERE a.id = :id")
+    String findAccountHolderNameById(@Param("id") Integer accountId);
 }

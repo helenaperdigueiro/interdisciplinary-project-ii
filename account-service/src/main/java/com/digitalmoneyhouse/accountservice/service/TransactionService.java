@@ -1,20 +1,19 @@
 package com.digitalmoneyhouse.accountservice.service;
 
-import com.digitalmoneyhouse.accountservice.dto.DepositResponse;
-import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
-import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
-import com.digitalmoneyhouse.accountservice.dto.TransferenceResponse;
+import com.digitalmoneyhouse.accountservice.dto.*;
 import com.digitalmoneyhouse.accountservice.exception.*;
 import com.digitalmoneyhouse.accountservice.model.*;
 import com.digitalmoneyhouse.accountservice.repository.AccountRepository;
 import com.digitalmoneyhouse.accountservice.repository.CardRepository;
 import com.digitalmoneyhouse.accountservice.repository.TransactionRepository;
+import com.digitalmoneyhouse.accountservice.util.DocumentsGenerator;
+import com.digitalmoneyhouse.accountservice.util.Formatter;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,12 +82,7 @@ public class TransactionService {
             results = transactionRepository.findALlByAccountId(accountId, limit);
         }
         for (Object[] result : results) {
-            String type = (String) result[4];
-            if (type.equals(TransactionType.CASH_DEPOSIT.toString())) {
-                transactions.add(resultObjectToDepositResponse(result));
-            } else if (type.equals(TransactionType.CASH_TRANSFERENCE.toString())) {
-                transactions.add(resultObjectToTransferResponse(result));
-            }
+            transactions.add(resolveTransactionResponse(result));
         }
         return transactions;
     }
@@ -107,26 +101,60 @@ public class TransactionService {
         deposit.setId((Integer) result[0]);
         deposit.setAmount((Double) result[1]);
         deposit.setDate(((Timestamp) result[2]).toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-        deposit.setDescription((String) result[3]);
-        deposit.setType((String) result[4]);
-        deposit.setCardId((Integer) result[5]);
-        deposit.setAccountId((Integer) result[6]);
+        deposit.setType((String) result[3]);
+        deposit.setTransactionCode((String) result[4]);
+        deposit.setDescription((String) result[5]);
+        deposit.setCardId((Integer) result[6]);
+        deposit.setCardNumber(Formatter.maskCardNumber((String) result[7]));
+        deposit.setAccountId((Integer) result[8]);
+        deposit.setAccountNumber((String) result[9]);
         return deposit;
     }
 
-    public TransferenceResponse resultObjectToTransferResponse(Object[] result) throws BusinessException {
-        System.out.println(accountRepository.findAccountNumberById((Integer) result[7]));
-        String originAccountNumber = accountRepository.findAccountNumberById((Integer) result[7]);
-        String destinationAccountNumber = accountRepository.findAccountNumberById((Integer) result[8]);
+    public TransferenceResponse resultObjectToTransferResponse(Object[] result) {
+        String originAccountNumber = accountRepository.findAccountNumberById((Integer) result[10]);
+        String originAccountHolderName = accountRepository.findAccountHolderNameById((Integer) result[10]);
+        String destinationAccountNumber = accountRepository.findAccountNumberById((Integer) result[11]);
+        String destinationAccountHolderName = accountRepository.findAccountHolderNameById((Integer) result[11]);
         TransferenceResponse transference = new TransferenceResponse();
         transference.setId((Integer) result[0]);
         transference.setAmount((Double) result[1]);
         transference.setDate(((Timestamp) result[2]).toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
-        transference.setDescription((String) result[3]);
-        transference.setType((String) result[4]);
-        transference.setOriginAccount(originAccountNumber);
-        transference.setDestinationAccount(destinationAccountNumber);
+        transference.setType((String) result[3]);
+        transference.setTransactionCode((String) result[4]);
+        transference.setDescription((String) result[5]);
+        transference.setOriginAccountNumber(originAccountNumber);
+        transference.setOriginAccountHolderName(originAccountHolderName);
+        transference.setDestinationAccountNumber(destinationAccountNumber);
+        transference.setDestinationAccountHolderName(destinationAccountHolderName);
         return transference;
+    }
+
+    public TransactionResponse findByIdAndAccountId(Integer transactionId, Integer accountId) throws BusinessException {
+        List<Object[]> transactionObjects = transactionRepository.findByIdAndAccountId(transactionId, accountId);
+        if (transactionObjects.size() < 1) {
+            throw new TransactionNotFoundException();
+        }
+        Object[] transactionObject = transactionObjects.get(0);
+        TransactionResponse transactionResponse = new TransactionResponse();
+        transactionResponse = resolveTransactionResponse(transactionObject);
+        return transactionResponse;
+    }
+
+    public TransactionResponse resolveTransactionResponse(Object[] transactionObject) {
+        TransactionResponse transactionResponse = new TransferenceResponse();
+        String transactionType = (String) transactionObject[3];
+        if (transactionType.equals(TransactionType.CASH_DEPOSIT.toString())) {
+            transactionResponse = resultObjectToDepositResponse(transactionObject);
+        } else if (transactionType.equals(TransactionType.CASH_TRANSFERENCE.toString())) {
+            transactionResponse = resultObjectToTransferResponse(transactionObject);
+        }
+        return transactionResponse;
+    }
+
+    public ReceiptContainer getTransferenceReceipt(Integer transactionId, Integer accountId) throws IOException,  BusinessException {
+        TransactionResponse transactionResponse = findByIdAndAccountId(transactionId, accountId);
+        return DocumentsGenerator.generateReceipt(transactionResponse);
     }
 
 }

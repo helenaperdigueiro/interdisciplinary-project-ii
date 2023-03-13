@@ -6,7 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TransferenceResponse extends TransactionResponse {
-    private String originAccount;
-    private String destinationAccount;
+    private String originAccountNumber;
+    private String originAccountHolderName;
+    private String destinationAccountNumber;
+    private String destinationAccountHolderName;
 }
 
