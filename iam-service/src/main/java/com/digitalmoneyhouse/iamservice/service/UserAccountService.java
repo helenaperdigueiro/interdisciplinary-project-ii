@@ -50,7 +50,7 @@ public class UserAccountService {
         UserAccount userModel = new UserAccount(userAccountBody);
         userModel.setRoles(Arrays.asList(RoleRepository.getById(1)));
         userModel = repository.save(userModel);
-        accountClient.createAccount(userModel.getId());
+        accountClient.createAccount(userModel.getId(), userModel.getFirstName() + " " + userModel.getLastName());
         VerificationToken verificationToken =  verificationTokenService.create(userModel);
         emailService.sendAccountConfirmationCode(verificationToken);
         return new GenericSucessResponse("Please confirm your account.");

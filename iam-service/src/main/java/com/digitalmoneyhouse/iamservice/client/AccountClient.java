@@ -25,13 +25,14 @@ public class AccountClient {
     @Value("${accountService.baseUrl}")
     private String BASE_URL;
 
-    public void createAccount(Integer userId) throws URISyntaxException, IOException, InterruptedException, BusinessException {
+    public void createAccount(Integer userId, String userFullName) throws URISyntaxException, IOException, InterruptedException, BusinessException {
         try {
             URI url = new URI(BASE_URL + "/accounts");
 
             JsonObject body = new JsonObject();
 
             body.addProperty("userId", userId);
+            body.addProperty("userFullName", userFullName);
 
             String requestBody = gson.toJson(body);
 
