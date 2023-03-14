@@ -93,4 +93,11 @@ public class AccountController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.pdf", receiptContainer.getTransactionCode()));
        return ResponseEntity.ok().headers(headers).body(receiptContainer.getBytes());
     }
+
+    @GetMapping("/{accountId}/transactions/recent-transference")
+    public ResponseEntity<List<TransactionResponse>> findLastFiveAccountTransferenceByAccountId(
+            @PathVariable Integer accountId
+    ) throws BusinessException {
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.findLastFiveAccountTransferenceByAccountId(accountId));
+    }
 }

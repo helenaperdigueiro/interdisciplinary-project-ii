@@ -157,4 +157,14 @@ public class TransactionService {
         return DocumentsGenerator.generateReceipt(transactionResponse);
     }
 
+    public List<TransactionResponse> findLastFiveAccountTransferenceByAccountId(Integer accountId) throws BusinessException {
+        Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
+        List<TransactionResponse> transactions = new ArrayList<>();
+        List<Object[]> results = transactionRepository.findLastFiveAccountTransferenceByAccountId(accountId);
+        for (Object[] result : results) {
+            transactions.add(resolveTransactionResponse(result));
+        }
+        return transactions;
+    }
+
 }
