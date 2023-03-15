@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -162,5 +162,175 @@ public class AccountControllerTest {
                 .get(HOST + "/accounts/13/cards")
                 .then()
                 .statusCode(200);
+    }
+
+    @Order(8)
+    @Test
+    public void getTransactionById() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions/1")
+                .then()
+                .body("id", equalTo(1))
+                .body("amount", equalTo(100000.0F))
+                .body("date", equalTo("2023-03-13T23:48:45.019118"))
+                .body("type", equalTo("CASH_DEPOSIT"))
+                .body("transactionCode", equalTo("89FE22AC-EFEE-465C-B159-CAACF01064A4"))
+                .body("description", equalTo("teste descricao"))
+                .body("cardId", equalTo(1))
+                .body("cardNumber", equalTo("5553 74 ** **** 6110"))
+                .body("accountId", equalTo(1))
+                .body("accountNumber", equalTo("337828"));
+    }
+
+    @Order(9)
+    @Test
+    public void getTransactionsWithLimit1() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?limit=1")
+                .then()
+                .assertThat()
+                .body("size()", equalTo(1));
+    }
+
+    @Order(10)
+    @Test
+    public void getTransactionsWithTypeCashDeposit() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?type=CASH_DEPOSIT")
+                .then()
+                .assertThat()
+                .body("type", hasItem("CASH_DEPOSIT"));
+    }
+
+    @Order(11)
+    @Test
+    public void getTransactionsWithTypeCashTransference() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?type=CASH_TRANSFERENCE")
+                .then()
+                .assertThat()
+                .body("type", hasItem("CASH_TRANSFERENCE"));
+    }
+
+    @Order(12)
+    @Test
+    public void getTransactionsWithLimit1AndTypeCashDeposit() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?limit=1&type=CASH_DEPOSIT")
+                .then()
+                .assertThat()
+                .body("size()", equalTo(1))
+                .body("type", hasItem("CASH_DEPOSIT"));
+    }
+
+    @Order(13)
+    @Test
+    public void saveTransactionTypeCashDeposit() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("amount", 10.00);
+        jsonObject.put("type", "CASH_DEPOSIT");
+        jsonObject.put("description", "teste descricao");
+        jsonObject.put("cardId", 1);
+
+        given()
+                .header("Content-type", "application/json")
+                .contentType(ContentType.JSON)
+                .body(jsonObject.toString())
+                .when()
+                .post(HOST + "/accounts/1/transactions")
+                .then()
+                .statusCode(201);
+    }
+
+    @Order(14)
+    @Test
+    public void saveTransactionTypeCashTransference() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("amount", 10.00);
+        jsonObject.put("type", "CASH_TRANSFERENCE");
+        jsonObject.put("description", "teste descricao");
+        jsonObject.put("destinationAccount", "147055");
+
+        given()
+                .header("Content-type", "application/json")
+                .contentType(ContentType.JSON)
+                .body(jsonObject.toString())
+                .when()
+                .post(HOST + "/accounts/1/transactions")
+                .then()
+                .statusCode(201);
+    }
+
+    @Order(15)
+    @Test
+    public void saveTransactionInvalidAccount() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("amount", 10.00);
+        jsonObject.put("type", "CASH_TRANSFERENCE");
+        jsonObject.put("description", "teste descricao");
+        jsonObject.put("destinationAccount", "147055");
+
+        given()
+                .header("Content-type", "application/json")
+                .contentType(ContentType.JSON)
+                .body(jsonObject.toString())
+                .when()
+                .post(HOST + "/accounts/10/transactions")
+                .then()
+                .statusCode(404);
+    }
+
+    @Order(16)
+    @Test
+    public void saveTransactionInvalidType() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("amount", 10.00);
+        jsonObject.put("type", "CHECK_TRANSFERENCE");
+        jsonObject.put("description", "teste descricao");
+        jsonObject.put("destinationAccount", "147055");
+
+        given()
+                .header("Content-type", "application/json")
+                .contentType(ContentType.JSON)
+                .body(jsonObject.toString())
+                .when()
+                .post(HOST + "/accounts/1/transactions")
+                .then()
+                .statusCode(400);
+    }
+
+    @Order(17)
+    @Test
+    public void getTransactionsWithInvalidType() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?type=CHECK_DEPOSIT")
+                .then()
+                .statusCode(400);
+    }
+
+    @Order(18)
+    @Test
+    public void saveTransactionTypeCashTransferenceInsufficientBalance() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("amount", 2000000.00);
+        jsonObject.put("type", "CASH_TRANSFERENCE");
+        jsonObject.put("description", "teste descricao");
+        jsonObject.put("destinationAccount", "147055");
+
+        given()
+                .header("Content-type", "application/json")
+                .contentType(ContentType.JSON)
+                .body(jsonObject.toString())
+                .when()
+                .post(HOST + "/accounts/1/transactions")
+                .then()
+                .body("message", equalTo("Insufficient Balance in account"))
+                .statusCode(400);
     }
 }

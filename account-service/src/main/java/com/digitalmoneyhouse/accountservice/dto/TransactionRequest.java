@@ -1,39 +1,52 @@
 package com.digitalmoneyhouse.accountservice.dto;
 
 import com.digitalmoneyhouse.accountservice.model.TransactionType;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Objects;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class TransactionRequest {
 
-    @NotBlank
-    private Integer cardId;
-
-    @NotBlank
+    @NotNull
     private Double amount;
 
+    @NotNull
     private TransactionType type;
 
     private String description;
 
-    public TransactionRequest(Integer cardId, Double amount, TransactionType type) {
-        this.cardId = cardId;
+    private Integer cardId;
+
+    private String destinationAccount;
+
+    public TransactionRequest(Double amount, TransactionType type, String destinationAccount) {
         this.amount = amount;
-        this.type = Objects.requireNonNullElse(type, TransactionType.CASH_DEPOSIT);
+        this.type = type;
+        this.destinationAccount = destinationAccount;
     }
 
-    public TransactionRequest(Integer cardId, Double amount, TransactionType type, String description) {
-        this.cardId = cardId;
+    public TransactionRequest(Double amount, TransactionType type, String description, String destinationAccount) {
         this.amount = amount;
-        this.type = Objects.requireNonNullElse(type, TransactionType.CASH_DEPOSIT);
+        this.type = type;
         this.description = description;
+        this.destinationAccount = destinationAccount;
+    }
+
+    public TransactionRequest(Double amount, TransactionType type, Integer cardId) {
+        this.amount = amount;
+        this.type = type;
+        this.cardId = cardId;
+    }
+
+    public TransactionRequest(Double amount, TransactionType type, String description, Integer cardId) {
+        this.amount = amount;
+        this.type = type;
+        this.description = description;
+        this.cardId = cardId;
     }
 
 }

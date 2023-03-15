@@ -11,6 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Table(name = "ACCOUNTS")
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +19,9 @@ public class Account {
 
     @Column(unique = true, nullable = false)
     private Integer userId;
+
+    @Column(nullable = false)
+    private String  userFullName;
 
     private String accountNumber;
 

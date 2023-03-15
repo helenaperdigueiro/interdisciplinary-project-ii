@@ -1,29 +1,23 @@
 package com.digitalmoneyhouse.accountservice.model;
 
-import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.UUID;
 
-@Entity
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "TRANSACTIONS")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(nullable = false)
-    private Integer cardId;
-
-    @Column(nullable = false)
-    private Integer accountId;
 
     @Column(nullable = false)
     private Double amount;
@@ -32,17 +26,18 @@ public class Transaction {
     private LocalDateTime date;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TransactionType type;
 
+    @Column(nullable = false)
+    private String transactionCode;
     private String description;
 
-
-    public Transaction(TransactionRequest transactionRequest, Integer accountId) {
-        this.cardId = transactionRequest.getCardId();
-        this.accountId = accountId;
-        this.amount = transactionRequest.getAmount();
+    public Transaction(Double amount, TransactionType type, String description) {
+        this.amount = amount;
+        this.type = type;
         this.date = LocalDateTime.now();
-        this.type = Objects.requireNonNullElse(type, TransactionType.CASH_DEPOSIT);
-        this.description = transactionRequest.getDescription();
+        this.transactionCode = UUID.randomUUID().toString().toUpperCase();
+        this.description = description;
     }
 }
