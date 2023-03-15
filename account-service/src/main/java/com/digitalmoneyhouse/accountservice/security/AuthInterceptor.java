@@ -17,9 +17,6 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (true){
-            return true;
-        }
         String requestUrl = request.getRequestURI();
         if (requestUrl.equals("/accounts")) {
             return true;

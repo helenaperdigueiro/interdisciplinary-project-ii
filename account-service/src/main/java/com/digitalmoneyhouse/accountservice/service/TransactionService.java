@@ -10,12 +10,18 @@ import com.digitalmoneyhouse.accountservice.util.DocumentsGenerator;
 import com.digitalmoneyhouse.accountservice.util.Formatter;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -69,22 +75,22 @@ public class TransactionService {
         return transactionRepository.save(transference);
     }
 
-    public List<TransactionResponse> find(Integer accountId, String transactionType, Integer limit) throws BusinessException {
+    public Page<TransactionResponse> find(Integer accountId, String transactionType, Pageable pageable) throws BusinessException {
+        pageable = validatePageable(pageable);
         Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
-        limit = (limit == null) ? 10 : limit;
         List<TransactionResponse> transactions = new ArrayList<>();
         List<Object[]> results = new ArrayList<>();
         if (transactionType != null) {
             if (isTypeValid(transactionType)) {
-                results = transactionRepository.findALlByAccountIdAndType(accountId, transactionType, limit);
+                results = transactionRepository.findALlByAccountIdAndType(accountId, transactionType, pageable);
             }
         } else {
-            results = transactionRepository.findALlByAccountId(accountId, limit);
+            results = transactionRepository.findALlByAccountId(accountId, pageable);
         }
         for (Object[] result : results) {
             transactions.add(resolveTransactionResponse(result));
         }
-        return transactions;
+        return PageableExecutionUtils.getPage(transactions, pageable, transactions::size);
     }
 
     public boolean isTypeValid(String transactionType) throws BusinessException {
@@ -165,6 +171,23 @@ public class TransactionService {
             transactions.add(resolveTransactionResponse(result));
         }
         return transactions;
+    }
+
+    private Pageable validatePageable(Pageable pageable) throws BusinessException {
+        Integer pageSize = pageable.getPageSize();
+        Integer pageNumber = pageable.getPageNumber();
+        Sort sortList = pageable.getSort();
+        for (Sort.Order order : sortList) {
+            String property = order.getProperty();
+            List<String> acceptedSortValues = Arrays.asList("id", "amount", "date", "type", "transaction_code", "description");
+            if (!acceptedSortValues.contains(property)) {
+                throw new BusinessException(400, "Sort parameter is not valid.");
+            }
+        }
+        if(sortList.isUnsorted()) {
+            pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
+        }
+        return pageable;
     }
 
 }

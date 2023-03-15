@@ -13,6 +13,9 @@ import com.digitalmoneyhouse.accountservice.service.CardService;
 import com.digitalmoneyhouse.accountservice.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -72,12 +75,12 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions")
-    public ResponseEntity<List<TransactionResponse>> findTransactions(
+    public ResponseEntity<Page<TransactionResponse>> findTransactions(
             @PathVariable Integer accountId,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) Integer limit
+            Pageable pageable
     ) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, limit));
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, pageable));
     }
 
     @GetMapping("/{accountId}/transactions/{transactionId}")
