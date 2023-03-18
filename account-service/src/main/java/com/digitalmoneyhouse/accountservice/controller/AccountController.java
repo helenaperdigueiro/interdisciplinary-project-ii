@@ -14,7 +14,6 @@ import com.digitalmoneyhouse.accountservice.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -90,7 +89,7 @@ public class AccountController {
 
     @GetMapping("/{accountId}/transactions/{transactionId}/receipt")
     public ResponseEntity<byte[]> getReceipt(@PathVariable Integer accountId, @PathVariable Integer transactionId) throws IOException, BusinessException {
-        ReceiptContainer receiptContainer = transactionService.getTransferenceReceipt(transactionId, accountId);
+        ReceiptContainer receiptContainer = transactionService.getTransactionReceipt(transactionId, accountId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.pdf", receiptContainer.getTransactionCode()));
