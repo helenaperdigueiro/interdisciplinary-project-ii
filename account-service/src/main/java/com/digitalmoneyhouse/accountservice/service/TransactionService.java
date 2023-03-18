@@ -36,6 +36,9 @@ public class TransactionService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private DocumentsGenerator documentsGenerator;
+
     @Transactional
     public Transaction save(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
         Transaction transaction = new Transaction();
@@ -158,9 +161,9 @@ public class TransactionService {
         return transactionResponse;
     }
 
-    public ReceiptContainer getTransferenceReceipt(Integer transactionId, Integer accountId) throws IOException,  BusinessException {
+    public ReceiptContainer getTransactionReceipt(Integer transactionId, Integer accountId) throws IOException,  BusinessException {
         TransactionResponse transactionResponse = findByIdAndAccountId(transactionId, accountId);
-        return DocumentsGenerator.generateReceipt(transactionResponse);
+        return documentsGenerator.generateReceipt(transactionResponse);
     }
 
     public List<TransactionResponse> findLastFiveAccountTransferenceByAccountId(Integer accountId) throws BusinessException {

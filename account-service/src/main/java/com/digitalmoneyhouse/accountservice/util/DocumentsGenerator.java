@@ -9,16 +9,19 @@ import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import com.itextpdf.io.font.FontProgram;
 import com.itextpdf.io.font.FontProgramFactory;
+import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.font.FontProvider;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 
+@Component
 public class DocumentsGenerator {
 
-    public static ReceiptContainer generateReceipt(TransactionResponse transactionResponse) throws IOException {
+    public ReceiptContainer generateReceipt(TransactionResponse transactionResponse) throws IOException {
         String html = "";
         if (transactionResponse instanceof TransferenceResponse) {
             TransferenceResponse transferenceResponse = (TransferenceResponse) transactionResponse;
@@ -28,13 +31,16 @@ public class DocumentsGenerator {
             html = generateDepositHtml(depositResponse);
         }
 
-        String openSansVariablePath = "src/main/resources/fonts/OpenSans-VariableFont_wdth,wght.ttf";
-        String openSansBoldPath = "src/main/resources/fonts/OpenSans-Bold.ttf";
-        FontProgram openSansVariableFontProgram = FontProgramFactory.createFont(openSansVariablePath);
-        FontProgram openSansBoldFontProgram = FontProgramFactory.createFont(openSansBoldPath);
+        InputStream openSansVariableInputStream = this.getClass().getClassLoader()
+                .getResourceAsStream("fonts/OpenSans-VariableFont_wdth,wght.ttf");
+        InputStream openSansBoldInputStream = this.getClass().getClassLoader()
+                .getResourceAsStream("fonts/OpenSans-Bold.ttf");
+
+        FontProgram openSansVariableFontProgram = FontProgramFactory.createFont(openSansVariableInputStream.readAllBytes());
+        FontProgram openSansBoldFontProgram = FontProgramFactory.createFont(openSansBoldInputStream.readAllBytes());
         FontProvider fontProvider = new DefaultFontProvider();
-        fontProvider.addFont(openSansVariableFontProgram);
-        fontProvider.addFont(openSansBoldFontProgram);
+        fontProvider.addFont(openSansVariableFontProgram, PdfEncodings.IDENTITY_H);
+        fontProvider.addFont(openSansBoldFontProgram, PdfEncodings.IDENTITY_H);
         ConverterProperties properties = new ConverterProperties();
         properties.setFontProvider(fontProvider);
 
@@ -46,7 +52,8 @@ public class DocumentsGenerator {
         HtmlConverter.convertToPdf(html, pdfDocument, properties);
         return new ReceiptContainer(byteArrayOutputStream.toByteArray(), transactionResponse.getTransactionCode());
     }
-    public static String generateTransferenceHtml(TransferenceResponse transferenceResponse) {
+
+    public String generateTransferenceHtml(TransferenceResponse transferenceResponse) {
         String html = "<div style=\"position: absolute; width: 602px; height: 819px; left: 0px; background: #201F22;\">\n" +
                 "\t\t<div style=\"position: absolute; width: 602px; height: 84px; background: #C1FD35;\">\n" +
                 "\t\t\t<svg style=\"position: absolute; width: 344px; height: 38px; left: 123px; top: 23px;\" width=\"344\" height=\"38\" viewBox=\"0 0 344 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n" +
@@ -120,7 +127,7 @@ public class DocumentsGenerator {
         return html;
     }
 
-    public static String generateDepositHtml(DepositResponse depositResponse) {
+    public String generateDepositHtml(DepositResponse depositResponse) {
         String html = "<div style=\"position: absolute; width: 602px; height: 819px; left: 0px; background: #201F22;\">\n" +
                 "\t\t<div style=\"position: absolute; width: 602px; height: 84px; background: #C1FD35;\">\n" +
                 "\t\t\t<svg style=\"position: absolute; width: 344px; height: 38px; left: 123px; top: 23px;\" width=\"344\" height=\"38\" viewBox=\"0 0 344 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n" +
