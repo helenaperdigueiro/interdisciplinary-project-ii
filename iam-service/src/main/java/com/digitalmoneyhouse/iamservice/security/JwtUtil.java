@@ -2,6 +2,7 @@ package com.digitalmoneyhouse.iamservice.security;
 
 import com.digitalmoneyhouse.iamservice.model.JwtToken;
 import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
+import com.digitalmoneyhouse.iamservice.service.UserAccountService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,6 +17,9 @@ import java.util.Map;
 @Component
 public class JwtUtil {
     private String SECRET_KEY = "secret";
+
+    @Autowired
+    private UserAccountService userAccountService;
 
     @Autowired
     private JwtTokenService service;
@@ -49,7 +53,9 @@ public class JwtUtil {
     }
 
     public String generateToken(UserDetails userDetails) {
+        Integer userId = userAccountService.findByEmail(userDetails.getUsername()).getId();
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
         return createToken(claims, userDetails.getUsername());
     }
 
