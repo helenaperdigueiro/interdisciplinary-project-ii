@@ -40,6 +40,14 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         token = token.substring(7);
 
+        String[] chunks = token.split("\\.");
+        String payload = new String(Base64.getDecoder().decode(chunks[1]));
+        Integer userIdFromToken = Integer.valueOf(stringPayloadToMap(payload).get("userId"));
+        Integer userIdByAccountPathId = accountService.findById(getAccountIdFromPath(requestUrl)).getUserId();
+        if (userIdByAccountPathId != userIdFromToken) {
+            throw new BusinessException(403, "Access denied");
+        }
+
         URI url = new URI("http://localhost:8080/validate-token");
         Gson gson = new Gson();
         JsonObject body = new JsonObject();
@@ -58,5 +66,31 @@ public class AuthInterceptor implements HandlerInterceptor {
         } else {
             throw new InvalidTokenException();
         }
+    }
+
+        private Integer getAccountIdFromPath(String requestUrl) {
+        try {
+            URI uri = new URI(requestUrl);
+            String[] segments = uri.getPath().split("/");
+            return Integer.valueOf(segments[2]);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, String> stringPayloadToMap(String payload) {
+        Map<String, String> payloadMap = new HashMap<>();
+        String[] payloadList = payload
+                .replace("\"", "")
+                .replace("{", "")
+                .replace("}", "")
+                .split(",");
+        for (String item : payloadList) {
+            String[] keyAndValue = item.split(":");
+            String key = keyAndValue[0];
+            String value = keyAndValue[1];
+            payloadMap.put(key, value);
+        }
+        return payloadMap;
     }
 }
