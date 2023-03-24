@@ -43,6 +43,7 @@ public class SecurityConfiguration<MyUserDetailsService, JwtRequestFilter> exten
                 .antMatchers("/tokens/revoke/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/reset-password").permitAll()
                 .antMatchers(HttpMethod.PUT, "/update-password").permitAll()
+                .antMatchers(HttpMethod.PUT, "/health").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
