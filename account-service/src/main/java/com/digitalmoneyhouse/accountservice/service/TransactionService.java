@@ -78,30 +78,28 @@ public class TransactionService {
         return transactionRepository.save(transference);
     }
 
-    public Page<TransactionResponse> find(Integer accountId, String transactionType, Pageable pageable) throws BusinessException {
+    public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Pageable pageable) throws BusinessException {
         pageable = validatePageable(pageable);
+        validateParams(transactionType);
+        if (endDate != null) {
+            endDate = endDate + "T23:59:59.999999";
+        }
         Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
         List<TransactionResponse> transactions = new ArrayList<>();
-        List<Object[]> results = new ArrayList<>();
-        if (transactionType != null) {
-            if (isTypeValid(transactionType)) {
-                results = transactionRepository.findALlByAccountIdAndType(accountId, transactionType, pageable);
-            }
-        } else {
-            results = transactionRepository.findALlByAccountId(accountId, pageable);
-        }
+        List<Object[]> results = transactionRepository.findAllByAccountId(accountId, transactionType, startDate, endDate, transactionCategory, pageable);
         for (Object[] result : results) {
             transactions.add(resolveTransactionResponse(result));
         }
         return PageableExecutionUtils.getPage(transactions, pageable, transactions::size);
     }
 
-    public boolean isTypeValid(String transactionType) throws BusinessException {
-        try {
-            TransactionType.valueOf(transactionType.toUpperCase());
-            return true;
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidTransactionTypeException();
+    public void isTypeValid(String transactionType) throws BusinessException {
+        if (transactionType != null) {
+            try {
+                TransactionType.valueOf(transactionType.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidTransactionTypeException();
+            }
         }
     }
 
@@ -191,6 +189,10 @@ public class TransactionService {
             pageable = PageRequest.of(pageNumber, pageSize, Sort.by("date").descending());
         }
         return pageable;
+    }
+
+    private void validateParams(String transactionType) throws BusinessException {
+        isTypeValid(transactionType);
     }
 
 }

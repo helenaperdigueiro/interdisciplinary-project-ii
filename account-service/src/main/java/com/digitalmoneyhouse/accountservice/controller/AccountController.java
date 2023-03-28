@@ -77,9 +77,12 @@ public class AccountController {
     public ResponseEntity<Page<TransactionResponse>> findTransactions(
             @PathVariable Integer accountId,
             @RequestParam(required = false) String type,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String transactionCategory,
             Pageable pageable
     ) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(transactionService.find(accountId, type, startDate, endDate, transactionCategory, pageable));
     }
 
     @GetMapping("/{accountId}/transactions/{transactionId}")
