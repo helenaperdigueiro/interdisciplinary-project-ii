@@ -19,10 +19,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class TransactionService {
@@ -80,10 +84,7 @@ public class TransactionService {
 
     public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Double minimumAmount, Double maximumAmount, Pageable pageable) throws BusinessException {
         pageable = validatePageable(pageable);
-        validateParams(transactionType);
-        if (endDate != null) {
-            endDate = endDate + "T23:59:59.999999";
-        }
+        validateParams(transactionType, transactionCategory, startDate, endDate);
         Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
         List<TransactionResponse> transactions = new ArrayList<>();
         List<Object[]> results = transactionRepository.findAllByAccountId(accountId, transactionType, startDate, endDate, transactionCategory, minimumAmount, maximumAmount, pageable);
@@ -91,16 +92,6 @@ public class TransactionService {
             transactions.add(resolveTransactionResponse(result));
         }
         return PageableExecutionUtils.getPage(transactions, pageable, transactions::size);
-    }
-
-    public void isTypeValid(String transactionType) throws BusinessException {
-        if (transactionType != null) {
-            try {
-                TransactionType.valueOf(transactionType.toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                throw new InvalidTransactionTypeException();
-            }
-        }
     }
 
     public DepositResponse resultObjectToDepositResponse(Object[] result) {
@@ -191,8 +182,75 @@ public class TransactionService {
         return pageable;
     }
 
-    private void validateParams(String transactionType) throws BusinessException {
-        isTypeValid(transactionType);
+    public void validateTransactionType(String transactionType) throws BusinessException {
+        if (transactionType != null) {
+            try {
+                TransactionType.valueOf(transactionType.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidTransactionTypeException();
+            }
+        }
+    }
+
+    public void validateTransactionCategory(String transactionCategory) throws BusinessException {
+        if (transactionCategory != null) {
+            try {
+                TransactionCategory.valueOf(transactionCategory.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new InvalidTransactionCategoryException();
+            }
+        }
+    }
+
+    public void validateDates(String startDate, String endDate) throws BusinessException {
+        String pattern = "^\\d{4}-\\d{2}-\\d{2}$";
+
+        if (startDate != null) {
+            try {
+                if (!Pattern.matches(pattern, startDate)) {
+                    throw new BusinessException(400, "Param 'startDate' must be in format YYYY-MM-DD");
+                }
+                LocalDate.parse(startDate);
+            } catch (DateTimeParseException ex) {
+                throw new BusinessException(400, String.format("Value '%s' for param 'startDate' is not a valid date", startDate));
+            }
+        }
+
+        if (startDate != null) {
+            try {
+                if (!Pattern.matches(pattern, endDate)) {
+                    throw new BusinessException(400, "Param 'endDate' must be in format YYYY-MM-DD");
+                }
+                LocalDate.parse(endDate);
+            } catch (DateTimeParseException ex) {
+                throw new BusinessException(400, String.format("Value '%s' for param 'endDate' is not a valid date", endDate));
+            }
+        }
+    }
+
+    public void validateAmounts(Double minimumAmount, Double maximumAmount) throws BusinessException {
+
+        if (minimumAmount != null) {
+            try {
+                Double.parseDouble(String.valueOf(minimumAmount));
+            } catch (NumberFormatException ex) {
+                throw new BusinessException(400, String.format("Value '%s' for param 'minimumAmount' is not a valid double", minimumAmount));
+            }
+        }
+
+        if (maximumAmount != null) {
+            try {
+                Double.parseDouble(String.valueOf(maximumAmount));
+            } catch (NumberFormatException ex) {
+                throw new BusinessException(400, String.format("Value '%s' for param 'maximumAmount' is not a valid double", maximumAmount));
+            }
+        }
+    }
+
+    private void validateParams(String transactionType, String transactionCategory, String startDate, String endDate) throws BusinessException {
+        validateTransactionType(transactionType);
+        validateTransactionCategory(transactionCategory);
+        validateDates(startDate, endDate);
     }
 
 }

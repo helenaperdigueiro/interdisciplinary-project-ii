@@ -41,7 +41,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "END)\n" +
             "AND (:type IS NULL OR type = :type)\n" +
             "AND (:minimumAmount IS NULL OR amount >= :minimumAmount) AND (:maximumAmount IS NULL OR amount <= :maximumAmount)\n" +
-            "AND (:startDate IS NULL OR date >= :startDate) AND (:endDate IS NULL OR date <= :endDate)", nativeQuery = true)
+            "AND (:startDate IS NULL OR date >= :startDate) AND (:endDate IS NULL OR DATE(date) <= :endDate)", nativeQuery = true)
     List<Object[]> findAllByAccountId(
             Integer accountId,
             String type,
