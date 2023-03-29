@@ -1,0 +1,15 @@
+services:
+  proxy:
+    image: iam-service-image
+    container_name: iam-service-container
+    build:
+      context: ..
+    ports:
+      - "80:8080"
+    networks:
+      - pi
+
+
+networks:
+  pi:
+    driver: bridge
