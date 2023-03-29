@@ -2,6 +2,7 @@ package com.digitalmoneyhouse.accountservice.dto;
 
 import com.digitalmoneyhouse.accountservice.model.TransactionType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 public class TransactionRequest {
 
     @NotNull
+    @Positive
     private Double amount;
 
     @NotNull

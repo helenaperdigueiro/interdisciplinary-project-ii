@@ -33,34 +33,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             "ON d.card_id = c.id\n" +
             "LEFT JOIN transferences t\n" +
             "ON ts.id = t.id\n" +
-            "WHERE d.account_id = ?1 OR t.origin_account_id = ?1 OR t.destination_account_id = ?1\n", nativeQuery = true)
-    List<Object[]> findALlByAccountId(Integer accountId, Pageable pageable);
-
-    @Query(value = "SELECT\n" +
-            "ts.id,\n" +
-            "ts.amount,\n" +
-            "ts.date,\n" +
-            "ts.type,\n" +
-            "ts.transaction_code,\n" +
-            "ts.description,\n" +
-            "deposits.card_id,\n" +
-            "cards.number,\n" +
-            "deposits.account_id,\n" +
-            "accounts.account_number,\n" +
-            "transferences.origin_account_id,\n" +
-            "transferences.destination_account_id\n" +
-            "FROM transactions ts\n" +
-            "LEFT JOIN deposits\n" +
-            "ON ts.id = deposits.id\n" +
-            "LEFT JOIN accounts\n" +
-            "ON deposits.account_id = accounts.id\n" +
-            "LEFT JOIN cards\n" +
-            "ON deposits.card_id = cards.id\n" +
-            "LEFT JOIN transferences\n" +
-            "ON ts.id = transferences.id\n" +
-            "WHERE (deposits.account_id = ?1 OR transferences.origin_account_id = ?1 OR transferences.destination_account_id = ?1)\n" +
-            "AND type = ?2\n", nativeQuery = true)
-    List<Object[]> findALlByAccountIdAndType(Integer accountId, String type, Pageable pageable);
+            "WHERE (\n" +
+            "CASE\n" +
+            "WHEN :transactionCategory = 'REVENUE' THEN (d.account_id = :accountId OR t.destination_account_id = :accountId)\n" +
+            "WHEN :transactionCategory = 'EXPENSE' THEN (t.origin_account_id = :accountId)\n" +
+            "ELSE (d.account_id = :accountId OR t.origin_account_id = :accountId OR t.destination_account_id = :accountId)\n" +
+            "END)\n" +
+            "AND (:type IS NULL OR type = :type)\n" +
+            "AND (:minimumAmount IS NULL OR amount >= :minimumAmount) AND (:maximumAmount IS NULL OR amount <= :maximumAmount)\n" +
+            "AND (:startDate IS NULL OR date >= :startDate) AND (:endDate IS NULL OR DATE(date) <= :endDate)", nativeQuery = true)
+    List<Object[]> findAllByAccountId(
+            Integer accountId,
+            String type,
+            String startDate, String endDate,
+            String transactionCategory,
+            Double minimumAmount, Double maximumAmount,
+            Pageable pageable
+    );
 
     @Query(value = "SELECT\n" +
             "transactions.id,\n" +

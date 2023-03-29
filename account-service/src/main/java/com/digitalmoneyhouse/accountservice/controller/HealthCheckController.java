@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/health")
-public class HealthCheck {
+public class HealthCheckController {
     @GetMapping
     public ResponseEntity<Map<String, String>> check() {
         Map<String, String> map = new HashMap<>();
