@@ -11,11 +11,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/health")
-public class HealthCheck {
+public class HealthCheckController {
     @GetMapping
     public ResponseEntity<Map<String, String>> check() {
         Map<String, String> map = new HashMap<>();
-        map.put("status", "Accounts Service is UP!");
+        map.put("status", "IAM Service is UP!");
         return ResponseEntity.status(HttpStatus.OK).body(map);
     }
 }

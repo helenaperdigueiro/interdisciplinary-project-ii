@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -88,5 +89,17 @@ public class ApiExceptionHandler {
         response.setStatus(ex.getStatusCode());
         response.setMessage(ex.getMessage());
         return ResponseEntity.status(ex.getStatusCode()).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        String param = ex.getName();
+        String value = (String) ex.getValue();
+        String[] requiredTypePackageParts = ex.getRequiredType().getName().split("\\.");
+        String requiredType = requiredTypePackageParts[requiredTypePackageParts.length-1];
+        response.setMessage(String.format("Value '%s' for param '%s' must be of type '%s'", value, param, requiredType));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
     }
 }

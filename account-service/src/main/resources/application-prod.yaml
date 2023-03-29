@@ -3,6 +3,11 @@ server:
 
 spring:
 
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${ACCOUNTS_DATABASE_HOST:localhost}:${ACCOUNTS_DATABASE_PORT:3306}/${ACCOUNTS_DATABASE_NAME:accounts_database}?createDatabaseIfNotExist=true&serverTimezone=UTC
