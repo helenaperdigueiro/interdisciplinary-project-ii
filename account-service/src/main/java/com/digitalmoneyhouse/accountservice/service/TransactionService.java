@@ -78,7 +78,7 @@ public class TransactionService {
         return transactionRepository.save(transference);
     }
 
-    public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Pageable pageable) throws BusinessException {
+    public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Double minimumAmount, Double maximumAmount, Pageable pageable) throws BusinessException {
         pageable = validatePageable(pageable);
         validateParams(transactionType);
         if (endDate != null) {
@@ -86,7 +86,7 @@ public class TransactionService {
         }
         Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
         List<TransactionResponse> transactions = new ArrayList<>();
-        List<Object[]> results = transactionRepository.findAllByAccountId(accountId, transactionType, startDate, endDate, transactionCategory, pageable);
+        List<Object[]> results = transactionRepository.findAllByAccountId(accountId, transactionType, startDate, endDate, transactionCategory, minimumAmount, maximumAmount, pageable);
         for (Object[] result : results) {
             transactions.add(resolveTransactionResponse(result));
         }
