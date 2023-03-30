@@ -14,7 +14,7 @@ log:
 	tail -f nohup.out
 
 docker-iam-service:
-	cd iam-service; mvn install -DskipTests; docker build -t iam-service-image .; docker-compose up
+	cd iam-service; mvn install -DskipTests; docker build -t iam-service-image .; docker-compose up -d
 
 docker-accounts-service:
-	cd account-service; mvn install -DskipTests; docker build -t account-service-image .; docker-compose up
+	cd account-service; mvn install -DskipTests; docker build -t account-service-image .; docker-compose up -d
