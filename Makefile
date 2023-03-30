@@ -12,3 +12,9 @@ accounts-run:
 
 log:
 	tail -f nohup.out
+
+docker-iam-service:
+	cd iam-service; mvn install -DskipTests; docker build -t iam-service-image .; docker-compose up
+
+docker-accounts-service:
+	cd account-service; mvn install -DskipTests; docker build -t account-service-image .; docker-compose up
