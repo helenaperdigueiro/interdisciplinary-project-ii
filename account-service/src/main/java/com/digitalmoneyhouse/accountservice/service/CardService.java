@@ -5,7 +5,6 @@ import com.digitalmoneyhouse.accountservice.exception.AccountNotFoundException;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
 import com.digitalmoneyhouse.accountservice.exception.CardNotFoundException;
 import com.digitalmoneyhouse.accountservice.exception.DuplicatedCardNumberException;
-import com.digitalmoneyhouse.accountservice.model.Account;
 import com.digitalmoneyhouse.accountservice.model.Card;
 import com.digitalmoneyhouse.accountservice.repository.AccountRepository;
 import com.digitalmoneyhouse.accountservice.repository.CardRepository;
@@ -26,7 +25,7 @@ public class CardService {
 
     @Transactional
     public Card save(CardRequest cardRequest, Integer accountId) throws BusinessException {
-        if(cardRepository.existsByNumber(cardRequest.getNumber())) {
+        if(cardRepository.existsByNumberAndDeletedFalse(cardRequest.getNumber())) {
             throw new DuplicatedCardNumberException();
         }
         Card card = new Card(cardRequest);
@@ -36,17 +35,17 @@ public class CardService {
 
     public List<Card> findByAccountId(Integer accountId) throws BusinessException {
         accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
-        return cardRepository.findByAccountId(accountId);
+        return cardRepository.findByAccountIdAndDeletedFalse(accountId);
     }
 
     public Card findByIdAndAccountId(Integer cardId, Integer accountId) throws BusinessException {
-        return cardRepository.findByIdAndAccountId(cardId, accountId).orElseThrow(CardNotFoundException::new);
+        return cardRepository.findByIdAndAccountIdAndDeletedFalse(cardId, accountId).orElseThrow(CardNotFoundException::new);
     }
 
     @Transactional
     public void deleteByIdAndAccountId(Integer cardId, Integer accountId) throws BusinessException {
-        cardRepository.findByIdAndAccountId(cardId, accountId).orElseThrow(CardNotFoundException::new);
-        cardRepository.deleteByIdAndAccountId(cardId, accountId);
+        cardRepository.findByIdAndAccountIdAndDeletedFalse(cardId, accountId).orElseThrow(CardNotFoundException::new);
+        cardRepository.delete(cardId);
     }
 
 }
