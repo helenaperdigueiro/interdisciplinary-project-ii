@@ -10,6 +10,8 @@ ENV EMAIL_PORT='2525'
 ENV EMAIL_USER='71348defe629b2'
 ENV EMAIL_PASSWORD='9e992a2118a5c6'
 
+ENV ACCOUNTS_BASE_URL='http://ec2-18-229-118-235.sa-east-1.compute.amazonaws.com:8081'
+
 WORKDIR /docker
 EXPOSE 8080
 COPY target/iam-service-0.0.1-SNAPSHOT.jar /docker/iam-service-0.0.1-SNAPSHOT.jar
