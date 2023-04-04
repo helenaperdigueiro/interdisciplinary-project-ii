@@ -1,14 +1,25 @@
 package com.digitalmoneyhouse.accountservice;
 
+import com.digitalmoneyhouse.accountservice.dto.DepositResponse;
+import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
+import com.digitalmoneyhouse.accountservice.dto.TransferenceResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AccountControllerTest {
@@ -332,5 +343,100 @@ public class AccountControllerTest {
                 .then()
                 .body("message", equalTo("Insufficient Balance in account"))
                 .statusCode(400);
+    }
+
+    @Order(19)
+    @Test
+    public void getTransactionsByAccountIdAndFilteredByDateRange() throws JSONException {
+        Response response = given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?startDate=2023-03-22&endDate=2023-03-23")
+                .then()
+                .contentType(ContentType.JSON)
+                .extract()
+                .response();
+
+        List<Map<String, Object>> childObjectsMapList = response.jsonPath().getList("content");
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        List<TransactionResponse> transactions = new ArrayList<>();
+
+        for (Map<String, Object> childObjectMap : childObjectsMapList) {
+            if (childObjectMap.containsKey("originAccountNumber")) {
+                TransferenceResponse childObject = mapper.convertValue(childObjectMap, TransferenceResponse.class);
+                transactions.add(childObject);
+            } else if (childObjectMap.containsKey("cardId")) {
+                DepositResponse childObject = mapper.convertValue(childObjectMap, DepositResponse.class);
+                transactions.add(childObject);
+            }
+        }
+        LocalDateTime startDate = LocalDateTime.parse("2023-03-22T00:00:00.000000", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        LocalDateTime endDate = LocalDateTime.parse("2023-03-23T23:59:59.999999", DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        for (TransactionResponse transaction : transactions) {
+            assertTrue(transaction.getDate().isAfter(startDate) && transaction.getDate().isBefore(endDate));
+        }
+    }
+
+    @Order(20)
+    @Test
+    public void getTransactionsByAccountIdAndFilteredByCategoryExpense() throws JSONException {
+        Response response = given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?transactionCategory=EXPENSE")
+                .then()
+                .contentType(ContentType.JSON)
+                .extract()
+                .response();
+
+        assertFalse(response.body().asString().contains("CASH_DEPOSIT"));
+        assertEquals(200, response.statusCode());
+    }
+
+    @Order(21)
+    @Test
+    public void getTransactionsByAccountIdAndFilteredByCategoryRevenue() throws JSONException {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?transactionCategory=REVENUE")
+                .then()
+                .contentType(ContentType.JSON)
+                .extract()
+                .response()
+                .then()
+                .assertThat()
+                .statusCode(200);
+    }
+
+    @Order(22)
+    @Test
+    public void getTransactionsByAccountIdAndFilteredByAmountRange() throws JSONException {
+        Response response = given()
+                .header("Authorization", "Bearer " + token)
+                .get(HOST + "/accounts/1/transactions?minimumAmount=10&maximumAmount=10000")
+                .then()
+                .contentType(ContentType.JSON)
+                .extract()
+                .response();
+
+        List<Map<String, Object>> childObjectsMapList = response.jsonPath().getList("content");
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        List<TransactionResponse> transactions = new ArrayList<>();
+
+        for (Map<String, Object> childObjectMap : childObjectsMapList) {
+            if (childObjectMap.containsKey("originAccountNumber")) {
+                TransferenceResponse childObject = mapper.convertValue(childObjectMap, TransferenceResponse.class);
+                transactions.add(childObject);
+            } else if (childObjectMap.containsKey("cardId")) {
+                DepositResponse childObject = mapper.convertValue(childObjectMap, DepositResponse.class);
+                transactions.add(childObject);
+            }
+        }
+
+        for (TransactionResponse transaction : transactions) {
+            assertTrue(transaction.getAmount() >= 10 && transaction.getAmount() <= 10000);
+        }
     }
 }
