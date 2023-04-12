@@ -25,13 +25,14 @@ public class AccountClient {
     @Value("${accountService.baseUrl}")
     private String BASE_URL;
 
-    public void createAccount(Integer userId, String userFullName) throws URISyntaxException, IOException, InterruptedException, BusinessException {
+    public void createAccount(Integer userId, String userFullName, String userCPF) throws URISyntaxException, IOException, InterruptedException, BusinessException {
         try {
             URI url = new URI(BASE_URL + "/accounts");
 
             JsonObject body = new JsonObject();
 
             body.addProperty("userId", userId);
+            body.addProperty("userCpf", userCPF);
             body.addProperty("userFullName", userFullName);
 
             String requestBody = gson.toJson(body);
@@ -45,6 +46,9 @@ public class AccountClient {
                     .build();
 
             HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new BusinessException(500, "Unexpected error while confirming account");
+            }
         } catch (ConnectException ex) {
             throw new ServiceUnavailableException("Accounts");
         }
