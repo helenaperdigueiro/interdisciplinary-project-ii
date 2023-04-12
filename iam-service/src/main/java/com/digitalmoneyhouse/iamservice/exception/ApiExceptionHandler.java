@@ -8,8 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +40,6 @@ public class ApiExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> messageNotReadable(HttpMessageNotReadableException ex) {
         ErrorResponse errorResponse = new ErrorResponse();
-        String message = ex.getMessage();
         errorResponse.setMessage(ex.getMessage());
         errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -88,5 +89,26 @@ public class ApiExceptionHandler {
         response.setStatus(ex.getStatusCode());
         response.setMessage(ex.getMessage());
         return ResponseEntity.status(ex.getStatusCode()).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        String param = ex.getName();
+        String value = (String) ex.getValue();
+        String[] requiredTypePackageParts = ex.getRequiredType().getName().split("\\.");
+        String requiredType = requiredTypePackageParts[requiredTypePackageParts.length-1];
+        response.setMessage(String.format("Value '%s' for param '%s' must be of type '%s'", value, param, requiredType));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
+    }
+    
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> missingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        String param = ex.getParameterName();
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(400);
+        response.setMessage(String.format("Param '%s' is required", param));
+        return ResponseEntity.status(400).body(response);
     }
 }
