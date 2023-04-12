@@ -1,12 +1,8 @@
 package com.digitalmoneyhouse.accountservice.controller;
 
-import com.digitalmoneyhouse.accountservice.dto.CardRequest;
-import com.digitalmoneyhouse.accountservice.dto.DocumentContainer;
-import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
-import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
+import com.digitalmoneyhouse.accountservice.dto.*;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
 import com.digitalmoneyhouse.accountservice.model.Account;
-import com.digitalmoneyhouse.accountservice.model.Card;
 import com.digitalmoneyhouse.accountservice.model.Transaction;
 import com.digitalmoneyhouse.accountservice.service.AccountService;
 import com.digitalmoneyhouse.accountservice.service.CardService;
@@ -45,17 +41,17 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/cards")
-    public ResponseEntity<Card> saveCard(@RequestBody CardRequest card, @PathVariable Integer accountId) throws BusinessException {
+    public ResponseEntity<CardResponse> saveCard(@RequestBody CardRequest card, @PathVariable Integer accountId) throws BusinessException {
         return ResponseEntity.status(HttpStatus.CREATED).body(cardService.save(card, accountId));
     }
 
     @GetMapping("/{accountId}/cards")
-    public ResponseEntity<List<Card>> findByAccountId(@PathVariable Integer accountId) throws BusinessException {
+    public ResponseEntity<List<CardResponse>> findByAccountId(@PathVariable Integer accountId) throws BusinessException {
         return ResponseEntity.status(HttpStatus.OK).body(cardService.findByAccountId(accountId));
     }
 
     @GetMapping("/{accountId}/cards/{cardId}")
-    public ResponseEntity<Card> findByCardIdAndAccountId(@PathVariable Integer cardId, @PathVariable Integer accountId) throws BusinessException {
+    public ResponseEntity<CardResponse> findByCardIdAndAccountId(@PathVariable Integer cardId, @PathVariable Integer accountId) throws BusinessException {
         return ResponseEntity.status(HttpStatus.OK).body(cardService.findByIdAndAccountId(cardId, accountId));
     }
 

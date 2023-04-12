@@ -9,7 +9,6 @@ import com.digitalmoneyhouse.iamservice.model.JwtToken;
 import com.digitalmoneyhouse.iamservice.security.AuthenticationRequest;
 import com.digitalmoneyhouse.iamservice.security.JwtUtil;
 import com.digitalmoneyhouse.iamservice.service.JwtTokenService;
-import com.digitalmoneyhouse.iamservice.service.PasswordResetTokenService;
 import com.digitalmoneyhouse.iamservice.service.UserAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

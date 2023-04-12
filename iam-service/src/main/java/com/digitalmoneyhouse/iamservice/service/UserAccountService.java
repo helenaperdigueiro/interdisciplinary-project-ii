@@ -43,21 +43,20 @@ public class UserAccountService {
     private EmailService emailService;
 
     @Transactional(rollbackOn = BusinessException.class)
-    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException, URISyntaxException, IOException, InterruptedException {
+    public GenericSucessResponse save(UserAccountBody userAccountBody) throws BusinessException {
         existsByCpfOrEmail(userAccountBody.getCpf(), userAccountBody.getEmail());
         String encryptedPassword = bCryptPasswordEncoder.encode(userAccountBody.getPassword());
         userAccountBody.setPassword(encryptedPassword);
         UserAccount userModel = new UserAccount(userAccountBody);
         userModel.setRoles(Arrays.asList(RoleRepository.getById(1)));
         userModel = repository.save(userModel);
-        accountClient.createAccount(userModel.getId(), userModel.getFirstName() + " " + userModel.getLastName());
         VerificationToken verificationToken =  verificationTokenService.create(userModel);
         emailService.sendAccountConfirmationCode(verificationToken);
         return new GenericSucessResponse("Please confirm your account.");
     }
 
-    @Transactional
-    public UserAccountResponse confirmRegistration(ConfirmRegistration confirmRegistration) throws BusinessException {
+    @Transactional(rollbackOn = BusinessException.class)
+    public UserAccountResponse confirmRegistration(ConfirmRegistration confirmRegistration) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         String verificationCode = confirmRegistration.getVerificationCode();
         Boolean isUserEmail = verificationTokenService.existsByVerificationCodeAndUserAccountEmail(verificationCode, confirmRegistration.getEmail());
         if (isUserEmail) {
@@ -68,6 +67,7 @@ public class UserAccountService {
                 userAccount.setIsEnabled(true);
                 userAccount = repository.save(userAccount);
                 verificationTokenService.deleteById(verificationToken.getId());
+                accountClient.createAccount(userAccount.getId(), userAccount.getFirstName() + " " + userAccount.getLastName(), userAccount.getCpf());
                 return new UserAccountResponse(userAccount);
             }
         }
@@ -112,10 +112,6 @@ public class UserAccountService {
 
     public UserAccountResponse editById(Integer id, UserAccountPatch userAccountPatch) throws BusinessException {
         UserAccount userAccount = repository.findById(id).orElseThrow(UserNotFoundException::new);
-
-//        if (userAccountPatch.getFirstName() != null) {
-//            userAccount.setFirstName(userAccountPatch.getFirstName());
-//        }
 
         NullUtils.updateIfPresent(userAccount::setFirstName, userAccountPatch.getFirstName());
         NullUtils.updateIfPresent(userAccount::setLastName, userAccountPatch.getLastName());
