@@ -1,6 +1,9 @@
 package com.digitalmoneyhouse.accountservice.util;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -14,6 +17,34 @@ public class Formatter {
 
     public  static String formatDouble(Double value) {
         return String.format(Locale.GERMAN, "%,.2f", value);
+    }
+
+    public static String formatDateInDayMonthYear(LocalDate date) {
+        String pattern = "dd/MM/yyyy";
+        return date.format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public static String formatDateInDayMonthYear(LocalDate date, String separator) {
+        String pattern = "dd/MM/yyyy";
+        if (separator != null) {
+            pattern = pattern.replace("/", separator);
+        }
+        return date.format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public static LocalDateTime toBrasiliaTime(LocalDateTime date) {
+        ZoneId systemZoneId = ZoneId.systemDefault();
+        ZonedDateTime zonedSystemDateTime = ZonedDateTime.of(date, systemZoneId);
+        ZoneId targetZoneId = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime zonedTargetDateTime = zonedSystemDateTime.withZoneSameInstant(targetZoneId);
+        return zonedTargetDateTime.toLocalDateTime();
+    }
+
+    public static String formatCpf(String cpf) {
+        if (cpf == null || cpf.length() != 11) {
+            return cpf;
+        }
+        return cpf.substring(0, 3) + "." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-" + cpf.substring(9);
     }
 
     public static String maskCardNumber(String cardNumber) {

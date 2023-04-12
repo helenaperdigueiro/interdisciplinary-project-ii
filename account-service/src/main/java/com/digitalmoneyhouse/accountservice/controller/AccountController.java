@@ -1,7 +1,7 @@
 package com.digitalmoneyhouse.accountservice.controller;
 
 import com.digitalmoneyhouse.accountservice.dto.CardRequest;
-import com.digitalmoneyhouse.accountservice.dto.ReceiptContainer;
+import com.digitalmoneyhouse.accountservice.dto.DocumentContainer;
 import com.digitalmoneyhouse.accountservice.dto.TransactionRequest;
 import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
@@ -11,17 +11,14 @@ import com.digitalmoneyhouse.accountservice.model.Transaction;
 import com.digitalmoneyhouse.accountservice.service.AccountService;
 import com.digitalmoneyhouse.accountservice.service.CardService;
 import com.digitalmoneyhouse.accountservice.service.TransactionService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 @RestController
@@ -94,11 +91,11 @@ public class AccountController {
 
     @GetMapping("/{accountId}/transactions/{transactionId}/receipt")
     public ResponseEntity<byte[]> getReceipt(@PathVariable Integer accountId, @PathVariable Integer transactionId) throws IOException, BusinessException {
-        ReceiptContainer receiptContainer = transactionService.getTransactionReceipt(transactionId, accountId);
+        DocumentContainer documentContainer = transactionService.getTransactionReceipt(transactionId, accountId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.pdf", receiptContainer.getTransactionCode()));
-       return ResponseEntity.ok().headers(headers).body(receiptContainer.getBytes());
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", documentContainer.getFileName()));
+       return ResponseEntity.ok().headers(headers).body(documentContainer.getBytes());
     }
 
     @GetMapping("/{accountId}/transactions/recent-transference")
@@ -106,5 +103,20 @@ public class AccountController {
             @PathVariable Integer accountId
     ) throws BusinessException {
         return ResponseEntity.status(HttpStatus.OK).body(transactionService.findLastFiveAccountTransferenceByAccountId(accountId));
+    }
+
+    @GetMapping("/{accountId}/transactions/reports")
+    public ResponseEntity<byte[]> getMonthlyReport(@PathVariable Integer accountId, @RequestParam String referenceMonth, HttpServletRequest request) throws IOException, BusinessException {
+        String contentType = request.getHeader("Content-Type");
+        DocumentContainer documentContainer = transactionService.getMonthlyReport(accountId, referenceMonth, contentType);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", documentContainer.getFileName()));
+        if (contentType == null || contentType.equals("text/csv")) {
+            headers.setContentType(MediaType.TEXT_PLAIN);
+        } else if (contentType.equals("application/pdf")) {
+            headers.setContentType(MediaType.APPLICATION_PDF);
+        }
+        return ResponseEntity.ok().headers(headers).body(documentContainer.getBytes());
     }
 }
