@@ -2,10 +2,14 @@ package com.digitalmoneyhouse.accountservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @AllArgsConstructor
-public class ReceiptContainer {
+@NoArgsConstructor
+public class DocumentContainer {
     private byte[] bytes;
-    private String transactionCode;
+    private String fileName;
 }
