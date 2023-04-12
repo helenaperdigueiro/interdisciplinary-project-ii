@@ -20,12 +20,12 @@ public class UserAccountController {
     private UserAccountService userAccountService;
 
     @PostMapping
-    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException, URISyntaxException, IOException, InterruptedException {
+    public ResponseEntity<GenericSucessResponse> save(@Valid @RequestBody UserAccountBody user) throws BusinessException {
         return ResponseEntity.status(HttpStatus.CREATED).body(userAccountService.save(user));
     }
 
     @PostMapping("/confirm-registration")
-    public ResponseEntity<UserAccountResponse> confirmRegistration(@RequestBody ConfirmRegistration confirmRegistration) throws BusinessException {
+    public ResponseEntity<UserAccountResponse> confirmRegistration(@RequestBody ConfirmRegistration confirmRegistration) throws BusinessException, URISyntaxException, IOException, InterruptedException {
         return ResponseEntity.status(HttpStatus.OK).body(userAccountService.confirmRegistration(confirmRegistration));
     }
 

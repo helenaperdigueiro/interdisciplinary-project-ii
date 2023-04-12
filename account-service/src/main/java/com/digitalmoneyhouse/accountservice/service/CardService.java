@@ -1,6 +1,7 @@
 package com.digitalmoneyhouse.accountservice.service;
 
 import com.digitalmoneyhouse.accountservice.dto.CardRequest;
+import com.digitalmoneyhouse.accountservice.dto.CardResponse;
 import com.digitalmoneyhouse.accountservice.exception.AccountNotFoundException;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
 import com.digitalmoneyhouse.accountservice.exception.CardNotFoundException;
@@ -12,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,22 +26,29 @@ public class CardService {
     private AccountRepository accountRepository;
 
     @Transactional
-    public Card save(CardRequest cardRequest, Integer accountId) throws BusinessException {
+    public CardResponse save(CardRequest cardRequest, Integer accountId) throws BusinessException {
         if(cardRepository.existsByNumberAndDeletedFalse(cardRequest.getNumber())) {
             throw new DuplicatedCardNumberException();
         }
         Card card = new Card(cardRequest);
         card.setAccount(accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new));
-        return cardRepository.save(card);
+        Card savedCard = cardRepository.save(card);
+        return new CardResponse(savedCard);
     }
 
-    public List<Card> findByAccountId(Integer accountId) throws BusinessException {
+    public List<CardResponse> findByAccountId(Integer accountId) throws BusinessException {
         accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
-        return cardRepository.findByAccountIdAndDeletedFalse(accountId);
+        List<Card> cards = cardRepository.findByAccountIdAndDeletedFalse(accountId);
+        List<CardResponse> response = new ArrayList<>();
+        for (Card card : cards) {
+            response.add(new CardResponse(card));
+        }
+        return response;
     }
 
-    public Card findByIdAndAccountId(Integer cardId, Integer accountId) throws BusinessException {
-        return cardRepository.findByIdAndAccountIdAndDeletedFalse(cardId, accountId).orElseThrow(CardNotFoundException::new);
+    public CardResponse findByIdAndAccountId(Integer cardId, Integer accountId) throws BusinessException {
+        Card cardFound = cardRepository.findByIdAndAccountIdAndDeletedFalse(cardId, accountId).orElseThrow(CardNotFoundException::new);
+        return new CardResponse(cardFound);
     }
 
     @Transactional

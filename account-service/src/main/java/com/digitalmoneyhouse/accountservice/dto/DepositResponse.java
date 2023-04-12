@@ -1,6 +1,5 @@
 package com.digitalmoneyhouse.accountservice.dto;
 
-import com.digitalmoneyhouse.accountservice.model.Deposit;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class TransactionService {
     public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Double minimumAmount, Double maximumAmount, Pageable pageable) throws BusinessException {
         pageable = validatePageable(pageable);
         validateParams(transactionType, transactionCategory, startDate, endDate);
-        Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
+        accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
         List<TransactionResponse> transactions = new ArrayList<>();
         List<Object[]> results = transactionRepository.findAllByAccountId(accountId, transactionType, startDate, endDate, transactionCategory, minimumAmount, maximumAmount, pageable);
         for (Object[] result : results) {
@@ -149,13 +150,35 @@ public class TransactionService {
         return transactionResponse;
     }
 
-    public ReceiptContainer getTransactionReceipt(Integer transactionId, Integer accountId) throws IOException,  BusinessException {
+    public DocumentContainer getTransactionReceipt(Integer transactionId, Integer accountId) throws IOException,  BusinessException {
         TransactionResponse transactionResponse = findByIdAndAccountId(transactionId, accountId);
         return documentsGenerator.generateReceipt(transactionResponse);
     }
 
-    public List<TransactionResponse> findLastFiveAccountTransferenceByAccountId(Integer accountId) throws BusinessException {
+    public DocumentContainer getMonthlyReport(Integer accountId, String referenceMonth, String contentType) throws BusinessException, IOException {
+        String pattern = "^\\d{4}-\\d{2}$";
+        if (!Pattern.matches(pattern, referenceMonth))
+            throw new BusinessException(400, "Param 'referenceMonth' must be in format YYYY-MM");
+
+        YearMonth yearMonth = YearMonth.parse(referenceMonth);
+        if (!yearMonth.isBefore(YearMonth.now())) {
+            throw new BusinessException(400, "Value for param 'referenceMonth' must be before the current month");
+        }
         Account account = accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
+        String startDate =yearMonth.atDay(1).toString();
+        String endDate = yearMonth.atEndOfMonth().toString();
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by("date").ascending());
+        List<TransactionResponse> transactions = new ArrayList<>();
+        List<Object[]> results = transactionRepository.findAllByAccountId(accountId, null, startDate, endDate, null, null, null, pageable);
+        for (Object[] result : results) {
+            transactions.add(resolveTransactionResponse(result));
+        }
+
+        return documentsGenerator.generateReport(account, yearMonth, transactions, contentType);
+    }
+
+    public List<TransactionResponse> findLastFiveAccountTransferenceByAccountId(Integer accountId) throws BusinessException {
+        accountRepository.findById(accountId).orElseThrow(AccountNotFoundException::new);
         List<TransactionResponse> transactions = new ArrayList<>();
         List<Object[]> results = transactionRepository.findLastFiveAccountTransferenceByAccountId(accountId);
         for (Object[] result : results) {
@@ -223,25 +246,6 @@ public class TransactionService {
                 LocalDate.parse(endDate);
             } catch (DateTimeParseException ex) {
                 throw new BusinessException(400, String.format("Value '%s' for param 'endDate' is not a valid date", endDate));
-            }
-        }
-    }
-
-    public void validateAmounts(Double minimumAmount, Double maximumAmount) throws BusinessException {
-
-        if (minimumAmount != null) {
-            try {
-                Double.parseDouble(String.valueOf(minimumAmount));
-            } catch (NumberFormatException ex) {
-                throw new BusinessException(400, String.format("Value '%s' for param 'minimumAmount' is not a valid double", minimumAmount));
-            }
-        }
-
-        if (maximumAmount != null) {
-            try {
-                Double.parseDouble(String.valueOf(maximumAmount));
-            } catch (NumberFormatException ex) {
-                throw new BusinessException(400, String.format("Value '%s' for param 'maximumAmount' is not a valid double", maximumAmount));
             }
         }
     }

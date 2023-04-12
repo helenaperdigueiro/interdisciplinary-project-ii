@@ -1,9 +1,11 @@
 package com.digitalmoneyhouse.accountservice.util;
 
 import com.digitalmoneyhouse.accountservice.dto.DepositResponse;
-import com.digitalmoneyhouse.accountservice.dto.ReceiptContainer;
+import com.digitalmoneyhouse.accountservice.dto.DocumentContainer;
 import com.digitalmoneyhouse.accountservice.dto.TransactionResponse;
 import com.digitalmoneyhouse.accountservice.dto.TransferenceResponse;
+import com.digitalmoneyhouse.accountservice.exception.BusinessException;
+import com.digitalmoneyhouse.accountservice.model.Account;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
@@ -13,15 +15,27 @@ import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+
 import com.itextpdf.layout.font.FontProvider;
+import com.opencsv.CSVWriter;
+import com.spire.doc.Document;
+import com.spire.doc.FileFormat;
+import com.spire.doc.ToPdfParameterList;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.List;
 
 @Component
 public class DocumentsGenerator {
 
-    public ReceiptContainer generateReceipt(TransactionResponse transactionResponse) throws IOException {
+    private final Character CSV_SEPARATOR = ';';
+    public DocumentContainer generateReceipt(TransactionResponse transactionResponse) throws IOException {
+        String fileName = transactionResponse.getTransactionCode() + ".pdf";
         String html = "";
         if (transactionResponse instanceof TransferenceResponse) {
             TransferenceResponse transferenceResponse = (TransferenceResponse) transactionResponse;
@@ -50,10 +64,10 @@ public class DocumentsGenerator {
         pdfDocument.setDefaultPageSize(pageSize);
         pageSize.applyMargins(0, 0, 0, 0, true);
         HtmlConverter.convertToPdf(html, pdfDocument, properties);
-        return new ReceiptContainer(byteArrayOutputStream.toByteArray(), transactionResponse.getTransactionCode());
+        return new DocumentContainer(byteArrayOutputStream.toByteArray(), fileName);
     }
 
-    public String generateTransferenceHtml(TransferenceResponse transferenceResponse) {
+    private String generateTransferenceHtml(TransferenceResponse transferenceResponse) {
         String html = "<div style=\"position: absolute; width: 602px; height: 819px; left: 0px; background: #201F22;\">\n" +
                 "\t\t<div style=\"position: absolute; width: 602px; height: 84px; background: #C1FD35;\">\n" +
                 "\t\t\t<svg style=\"position: absolute; width: 344px; height: 38px; left: 123px; top: 23px;\" width=\"344\" height=\"38\" viewBox=\"0 0 344 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n" +
@@ -127,7 +141,7 @@ public class DocumentsGenerator {
         return html;
     }
 
-    public String generateDepositHtml(DepositResponse depositResponse) {
+    private String generateDepositHtml(DepositResponse depositResponse) {
         String html = "<div style=\"position: absolute; width: 602px; height: 819px; left: 0px; background: #201F22;\">\n" +
                 "\t\t<div style=\"position: absolute; width: 602px; height: 84px; background: #C1FD35;\">\n" +
                 "\t\t\t<svg style=\"position: absolute; width: 344px; height: 38px; left: 123px; top: 23px;\" width=\"344\" height=\"38\" viewBox=\"0 0 344 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n" +
@@ -190,5 +204,206 @@ public class DocumentsGenerator {
                 .replace("TRANSACTION_CODE", transferenceCode);
 
         return html;
+    }
+
+    public DocumentContainer generateReport(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions, String contentType) throws IOException, BusinessException {
+        DocumentContainer documentContainer = new DocumentContainer();
+        if (contentType == null || contentType.equals("text/csv")) {
+            documentContainer = generateCsv(account, referenceMonth, transactions);
+        } else if (contentType.equals("application/pdf")) {
+            documentContainer = generatePdfFromDocxTemplate(account, referenceMonth, transactions);
+        }
+        return documentContainer;
+    }
+
+    private DocumentContainer generateCsv(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions) throws IOException, BusinessException {
+        String month = referenceMonth.toString().replace("-", "_");
+        String userAccountNumber = account.getAccountNumber();
+        String fileName = String.format("report__%s__%s.csv", month, userAccountNumber);
+
+        StringWriter writer = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(writer, CSV_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
+        String[] headerRecord = {"data", "movimento", "tipo", "valor"};
+        csvWriter.writeNext(headerRecord);
+
+        for (TransactionResponse transaction : transactions) {
+            Boolean isExpense;
+            String transactionDate = Formatter.formatDateInDayMonthYear(transaction.getDate().toLocalDate());
+            String amount = Formatter.formatDouble(transaction.getAmount()).replace(".", "");
+            String transactionDetails = "";
+            String transactionType = "ENTRADA";
+            if (transaction instanceof TransferenceResponse) {
+                TransferenceResponse transference = (TransferenceResponse) transaction;
+                isExpense = transference.getOriginAccountNumber().equals(userAccountNumber);
+                if (isExpense) {
+                    transactionDetails = String.format("Transferência %s", transference.getDestinationAccountHolderName());
+                    transactionType = "SAIDA";
+                } else {
+                    transactionDetails = String.format("Transferência %s", transference.getOriginAccountHolderName());
+                }
+            }
+            if (transaction instanceof DepositResponse) {
+                DepositResponse deposit = (DepositResponse) transaction;
+                transactionDetails = String.format(
+                        "Depósito com cartão %s", deposit.getCardNumber()
+                );
+            }
+            csvWriter.writeNext(new String[] {transactionDate, transactionDetails, transactionType, amount});
+            csvWriter.close();
+        }
+
+        return new DocumentContainer(writer.toString().getBytes(), fileName);
+    }
+
+    private DocumentContainer generatePdfFromDocxTemplate(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions) throws IOException {
+        String firstDay = Formatter.formatDateInDayMonthYear(referenceMonth.atDay(1));
+        String lastDay = Formatter.formatDateInDayMonthYear(referenceMonth.atEndOfMonth());
+        LocalDateTime now = Formatter.toBrasiliaTime(LocalDateTime.now());
+        String today = Formatter.formatDateInDayMonthYear(now.toLocalDate());
+        DecimalFormat decimalFormat = new DecimalFormat("00");
+        String nowTime =  String.format("%s:%s:%s", decimalFormat.format(now.getHour()), decimalFormat.format(now.getMinute()), decimalFormat.format(now.getSecond()));
+        String userFullName = account.getUserFullName().toUpperCase();
+        String userAccountNumber = account.getAccountNumber();
+        String userCpf = Formatter.formatCpf(account.getUserCpf());
+        String month = referenceMonth.toString().replace("-", "_");
+        String fileName = String.format("report__%s__%s.pdf", month, userAccountNumber);
+
+        if (transactions.isEmpty()) {
+            return new DocumentContainer(convertToPdfBytes(emptyTemplate(account, referenceMonth)), fileName);
+        }
+
+        InputStream reportInputStream = this.getClass().getClassLoader()
+                .getResourceAsStream("templates/monthly_report_template.docx");
+        XWPFDocument reportTemplate = new XWPFDocument(reportInputStream);
+
+        XWPFHeader header = reportTemplate.getHeaderList().get(0);
+        XWPFParagraph userFullNameParagraph = header.createParagraph();
+        XWPFRun userFullNameRun = userFullNameParagraph.createRun();
+        userFullNameRun.setText(userFullName);
+        userFullNameParagraph.setSpacingAfter(0);
+        XWPFParagraph userInfoParagraph = header.createParagraph();
+        XWPFRun userInfoRun = userInfoParagraph.createRun();
+        userInfoRun.setText(String.format("CPF: %s", userCpf));
+        addTabs(userInfoRun, 3);
+        userInfoRun.setText(String.format("CONTA: %s", userAccountNumber));
+
+        XWPFParagraph reportInfoParagraph = reportTemplate.getParagraphs().get(2);
+        XWPFRun reportInfoRun = reportInfoParagraph.createRun();
+        reportInfoRun.setText(String.format("de %s a %s", firstDay, lastDay));
+        addTabs(reportInfoRun, 4);
+        reportInfoRun.setText(String.format("Emitido em: %s %s", today, nowTime));
+
+        XWPFTable table = reportTemplate.getTables().get(0);
+
+        for (TransactionResponse transaction : transactions) {
+            String amount = Formatter.formatDouble(transaction.getAmount());
+            String transactionDate = Formatter.formatDateInDayMonthYear(transaction.getDate().toLocalDate());
+            String transactionDetails = "";
+            Boolean isExpense;
+            String amountColor = "008000";
+
+            if (transaction instanceof TransferenceResponse) {
+                TransferenceResponse transference = (TransferenceResponse) transaction;
+                isExpense = transference.getOriginAccountNumber().equals(userAccountNumber);
+                if (isExpense) {
+                    transactionDetails = String.format("Transferência enviada para %s", transference.getDestinationAccountHolderName());
+                    amount = "-" + amount;
+                    amountColor = "FF0000";
+                } else {
+                    transactionDetails = String.format("Transferência recebida de %s", transference.getOriginAccountHolderName());
+                }
+            }
+            if (transaction instanceof DepositResponse) {
+                DepositResponse deposit = (DepositResponse) transaction;
+                transactionDetails = String.format(
+                        "Depósito com cartão %s", deposit.getCardNumber()
+                );
+            }
+
+            XWPFTableRow newRow = table.createRow();
+            XWPFTableCell dateCell = newRow.getCell(0);
+            dateCell.setText(transactionDate);
+            dateCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
+            dateCell.getParagraphs().get(0).getRuns().get(0).setBold(false);
+            XWPFTableCell detailsCell = newRow.getCell(1);
+            detailsCell.setText(transactionDetails);
+            detailsCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
+            XWPFTableCell amountCell = newRow.getCell(2);
+            amountCell.setText(amount);
+            amountCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
+            amountCell.getParagraphs().get(0).getRuns().get(0).setBold(true);
+            amountCell.getParagraphs().get(0).setAlignment(ParagraphAlignment.RIGHT);
+            amountCell.getParagraphs().get(0).getRuns().get(0).setColor(amountColor);
+        }
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        reportTemplate.write(byteArrayOutputStream);
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        reportTemplate.close();
+        reportInputStream.close();
+        byteArrayOutputStream.close();
+
+        return new DocumentContainer(convertToPdfBytes(bytes), fileName);
+    }
+
+    private byte[] emptyTemplate(Account account, YearMonth referenceMonth) throws IOException {
+        String firstDay = Formatter.formatDateInDayMonthYear(referenceMonth.atDay(1));
+        String lastDay = Formatter.formatDateInDayMonthYear(referenceMonth.atEndOfMonth());
+        LocalDateTime now = Formatter.toBrasiliaTime(LocalDateTime.now());
+        String today = Formatter.formatDateInDayMonthYear(now.toLocalDate());
+        DecimalFormat decimalFormat = new DecimalFormat("00");
+        String nowTime =  String.format("%s:%s:%s", decimalFormat.format(now.getHour()), decimalFormat.format(now.getMinute()), decimalFormat.format(now.getSecond()));
+        String userFullName = account.getUserFullName().toUpperCase();
+        String userCpf = Formatter.formatCpf(account.getUserCpf());
+        String userAccountNumber = account.getAccountNumber();
+
+        InputStream reportInputStream = this.getClass().getClassLoader()
+                .getResourceAsStream("templates/monthly_report_template_no_data.docx");
+        XWPFDocument reportTemplate = new XWPFDocument(reportInputStream);
+
+        XWPFHeader header = reportTemplate.getHeaderList().get(2);
+        XWPFParagraph userFullNameParagraph = header.createParagraph();
+        XWPFRun userFullNameRun = userFullNameParagraph.createRun();
+        userFullNameRun.setText(userFullName);
+        userFullNameParagraph.setSpacingAfter(0);
+        XWPFParagraph userInfoParagraph = header.createParagraph();
+        XWPFRun userInfoRun = userInfoParagraph.createRun();
+        userInfoRun.setText(String.format("CPF: %s", userCpf));
+        addTabs(userInfoRun, 3);
+        userInfoRun.setText(String.format("CONTA: %s", userAccountNumber));
+
+        XWPFParagraph reportInfoParagraph = reportTemplate.getParagraphs().get(2);
+        XWPFRun reportInfoRun = reportInfoParagraph.createRun();
+        reportInfoRun.setText(String.format("de %s a %s", firstDay, lastDay));
+        addTabs(reportInfoRun, 4);
+        reportInfoRun.setText(String.format("Emitido em: %s %s", today, nowTime));
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        reportTemplate.write(byteArrayOutputStream);
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+        reportTemplate.close();
+        reportInputStream.close();
+        byteArrayOutputStream.close();
+
+        return bytes;
+    }
+
+    private void addTabs(XWPFRun run, int tabQuantity) {
+        for (int i=0; i < tabQuantity; i++) {
+            run.addTab();
+        }
+    }
+
+    private byte[] convertToPdfBytes(byte[] reportBytesFromDoc) {
+        Document doc = new Document();
+        doc.loadFromStream(new ByteArrayInputStream(reportBytesFromDoc), FileFormat.Docx_2013);
+
+        ToPdfParameterList parameterList =new ToPdfParameterList();
+        parameterList.isEmbeddedAllFonts(true);
+        parameterList.setDisableLink(true);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        doc.saveToStream(outputStream, parameterList);
+        return outputStream.toByteArray();
     }
 }
