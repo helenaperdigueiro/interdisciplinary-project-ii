@@ -1,0 +1,14 @@
+services:
+  proxy:
+    image: account-service-image
+    container_name: account-service-container
+    build:
+      context: .
+    ports:
+      - "8081:8081"
+    networks:
+      - pi
+
+networks:
+  pi:
+    driver: bridge

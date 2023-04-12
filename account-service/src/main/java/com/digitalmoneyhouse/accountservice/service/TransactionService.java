@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
@@ -55,7 +54,7 @@ public class TransactionService {
     }
 
     private Deposit makeDeposit(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
-        Card card = cardRepository.findByIdAndAccountId(transactionRequest.getCardId(), loggedAccountId).orElseThrow(CardNotFoundException::new);
+        Card card = cardRepository.findByIdAndAccountIdAndDeletedFalse(transactionRequest.getCardId(), loggedAccountId).orElseThrow(CardNotFoundException::new);
         Account account = card.getAccount();
         account.setWalletBalance(account.getWalletBalance() + transactionRequest.getAmount());
         accountRepository.save(account);

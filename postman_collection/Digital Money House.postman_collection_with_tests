@@ -1,0 +1,2818 @@
+{
+	"info": {
+		"_postman_id": "e7f4b2a2-35c3-488b-870b-6630e377651f",
+		"name": "Digital Money House",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26131824"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register Empty Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"\",\r\n    \"lastName\": \"\",\r\n    \"cpf\": \"\",\r\n    \"phoneNumber\": \"\",\r\n    \"email\": \"\",\r\n    \"password\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Invalid Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Fulano\",\r\n    \"lastName\": \"de Tal\",\r\n    \"cpf\": \"12345678900\",\r\n    \"phoneNumber\": \"\",\r\n    \"email\": \"fulanomail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Created\", function () {",
+									"     pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).to.eql(\"Please confirm your account.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Fulano\",\r\n    \"lastName\": \"de Tal\",\r\n    \"cpf\": \"12345678908\",\r\n    \"phoneNumber\": \"92999999999\",\r\n    \"email\": \"fulano2@mail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Duplicate Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"field 'email' is already in use\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Fulano\",\r\n    \"lastName\": \"de Tal\",\r\n    \"cpf\": \"12345678907\",\r\n    \"phoneNumber\": \"92999999999\",\r\n    \"email\": \"fulano@mail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Duplicate CPF",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"field 'cpf' is already in use\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Fulano\",\r\n    \"lastName\": \"de Tal\",\r\n    \"cpf\": \"12345678900\",\r\n    \"phoneNumber\": \"92999999999\",\r\n    \"email\": \"fulano1@mail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Account Unresgistered Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"The given verification code has expired or is invalid.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"ciclano@mail.com\",\r\n    \"verificationCode\": \"634412\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users/confirm-registration",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users",
+								"confirm-registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Account Invalid Verification Code",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"The given verification code has expired or is invalid.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"fulano@mail.com\",\r\n    \"verificationCode\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users/confirm-registration",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users",
+								"confirm-registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  const requestBody = JSON.parse(pm.request.body.raw);",
+									"",
+									"  pm.expect(responseJson.email).to.eql(requestBody.body.email);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"fulano@mail.com\",\r\n    \"verificationCode\": \"634412\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users/confirm-registration",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users",
+								"confirm-registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Verified Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"token\", jsonData.accessToken);\r",
+									"\r",
+									"pm.test(\"POST Status Ok\", function () {\r",
+									"     pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"POST has Body\", function () {\r",
+									"     pm.response.to.be.withBody;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"POST return JSON\", function () {\r",
+									"     pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"POST request body is equal response json\", () => {\r",
+									"\r",
+									"    pm.expect(responseBody).contains(\"accessToken\");\r",
+									"\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"bruno@mail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/authenticate",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Invalid Credencials",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Unauthoried\", function () {",
+									"     pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Incorrect E-mail or Password. Please check your details and try again.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"fulano@mail.com\",\r\n    \"password\": \"abc\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/authenticate",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Not Verified Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Unauthoried\", function () {",
+									"     pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Incorrect E-mail or Password. Please check your details and try again.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"fulano.naoverificado0@mail.com\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/authenticate",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Banana",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmdWxhbm9AbWFpbC5jb20iLCJleHAiOjE2NzY0MTk2MjYsImlhdCI6MTY3NjQxNjAyNX0.5P95TJZ2jUNEcoz-nsVv9dfSVt5ve9XfpQihwaLud1U",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/banana",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"banana"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.status).contains(\"IAM Service is UP!\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmdWxhbm9AbWFpbC5jb20iLCJleHAiOjE2NzY0MTk2MjYsImlhdCI6MTY3NjQxNjAyNX0.5P95TJZ2jUNEcoz-nsVv9dfSVt5ve9XfpQihwaLud1U",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/health",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"You have been logged out.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/tokens/revoke/{{token}}",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"tokens",
+								"revoke",
+								"{{token}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"If there's an account associated with the informed e-mail we'll send you a link to reset the password.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/reset-password?email=fulano@mail.com",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"reset-password"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "fulano@mail.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save New Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"PUT Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"PUT has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"PUT return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"PUT request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Your password has been changed successfully.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"newPassword\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/update-password?token=5bb00293-f513-4101-8e09-d5c1789835f5",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"update-password"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "5bb00293-f513-4101-8e09-d5c1789835f5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"{{token}}\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/validate-token",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"validate-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Forbidden\", function () {",
+									"     pm.response.to.have.status(403);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"Carol\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/validate-token",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"validate-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"firstName\");",
+									"  pm.expect(responseJson).to.have.property(\"lastName\");",
+									"  pm.expect(responseJson).to.have.property(\"cpf\");",
+									"  pm.expect(responseJson).to.have.property(\"phoneNumber\");",
+									"  pm.expect(responseJson).to.have.property(\"email\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users/12",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users",
+								"12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit User By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"PATCH Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"PATCH has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"PATCH return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  const requestBody = JSON.parse(pm.request.body.raw);",
+									"",
+									"  pm.expect(responseJson).contains(requestBody);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Cicrano\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{AUTH_BASE_URL}}/users/12",
+							"host": [
+								"{{AUTH_BASE_URL}}"
+							],
+							"path": [
+								"users",
+								"12"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Create Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Created\", function () {",
+									"     pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"userId\");",
+									"  pm.expect(responseJson).to.have.property(\"userFullName\");",
+									"  pm.expect(responseJson).to.have.property(\"accountNumber\");",
+									"  pm.expect(responseJson).to.have.property(\"walletBalance\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 2001,\r\n    \"userFullName\": \"Cicrana\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Account By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"userId\");",
+									"  pm.expect(responseJson).to.have.property(\"userFullName\");",
+									"  pm.expect(responseJson).to.have.property(\"accountNumber\");",
+									"  pm.expect(responseJson).to.have.property(\"walletBalance\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Created\", function () {",
+									"     pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"number\");",
+									"  pm.expect(responseJson).to.have.property(\"holder\");",
+									"  pm.expect(responseJson).to.have.property(\"expirationDate\");",
+									"  pm.expect(responseJson).to.have.property(\"cvc\");",
+									"  pm.expect(responseJson).to.have.property(\"account\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"number\": \"5553740017556113\",\r\n    \"holder\": \"Fulano de Tal\",\r\n    \"expirationDate\": \"10/2030\",\r\n    \"cvc\": \"431\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/cards",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cards By Account Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson[0]).to.have.property(\"id\");",
+									"  pm.expect(responseJson[0]).to.have.property(\"number\");",
+									"  pm.expect(responseJson[0]).to.have.property(\"holder\");",
+									"  pm.expect(responseJson[0]).to.have.property(\"expirationDate\");",
+									"  pm.expect(responseJson[0]).to.have.property(\"cvc\");",
+									"  pm.expect(responseJson[0]).to.have.property(\"account\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/cards",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cards By Card Id And Account Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"number\");",
+									"  pm.expect(responseJson).to.have.property(\"holder\");",
+									"  pm.expect(responseJson).to.have.property(\"expirationDate\");",
+									"  pm.expect(responseJson).to.have.property(\"cvc\");",
+									"  pm.expect(responseJson).to.have.property(\"account\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/cards/2",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"cards",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Card By Card Id and Account Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DELETE Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/cards/1",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"cards",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deposit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Created\", function () {",
+									"     pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"amount\");",
+									"  pm.expect(responseJson).to.have.property(\"date\");",
+									"  pm.expect(responseJson).to.have.property(\"type\");",
+									"  pm.expect(responseJson).to.have.property(\"transactionCode\");",
+									"  pm.expect(responseJson).to.have.property(\"description\");",
+									"  pm.expect(responseJson).to.have.property(\"cardId\");",
+									"  pm.expect(responseJson).to.have.property(\"account\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 1000.00,\r\n    \"type\": \"CASH_DEPOSIT\",\r\n    \"description\": null,\r\n    \"cardId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transference",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Created\", function () {",
+									"     pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"amount\");",
+									"  pm.expect(responseJson).to.have.property(\"date\");",
+									"  pm.expect(responseJson).to.have.property(\"type\");",
+									"  pm.expect(responseJson).to.have.property(\"transactionCode\");",
+									"  pm.expect(responseJson).to.have.property(\"description\");",
+									"  pm.expect(responseJson).to.have.property(\"originAccount\");",
+									"  pm.expect(responseJson).to.have.property(\"destinationAccount\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 100000.00,\r\n    \"type\": \"CASH_TRANSFERENCE\",\r\n    \"description\": null,\r\n    \"destinationAccount\": \"885005\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transference Insufficient Balance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Bad Request\", function () {",
+									"     pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Insufficient Balance in account\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 10000000000.00,\r\n    \"type\": \"CASH_TRANSFERENCE\",\r\n    \"description\": null,\r\n    \"destinationAccount\": \"684125\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transference Invalid Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Status Not Found\", function () {",
+									"     pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"POST has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"POST return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"POST request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Account not found\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"amount\": 20.00,\r\n    \"type\": \"CASH_TRANSFERENCE\",\r\n    \"description\": null,\r\n    \"destinationAccount\": \"999999\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transaction by Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson).to.have.property(\"id\");",
+									"  pm.expect(responseJson).to.have.property(\"amount\");",
+									"  pm.expect(responseJson).to.have.property(\"date\");",
+									"  pm.expect(responseJson).to.have.property(\"type\");",
+									"  pm.expect(responseJson).to.have.property(\"transactionCode\");",
+									"  pm.expect(responseJson).to.have.property(\"description\");",
+									"  pm.expect(responseJson).to.have.property(\"cardId\");",
+									"  pm.expect(responseJson).to.have.property(\"cardNumber\");",
+									"  pm.expect(responseJson).to.have.property(\"accountId\");",
+									"  pm.expect(responseJson).to.have.property(\"accountNumber\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions/8",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions",
+								"8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transaction Invalid Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Not Found\", function () {",
+									"     pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Transaction not found\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions/100",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions",
+								"100"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Receipt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions/8/receipt",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions",
+								"8",
+								"receipt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Receipt Invalid Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Not Found\", function () {",
+									"     pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"",
+									"  pm.expect(responseJson.message).contains(\"Transaction not found\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions/100/receipt",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions",
+								"100",
+								"receipt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions CASH_TRANSFERENCE size 10",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.content.forEach(item => {",
+									"      pm.expect(item.type).contains(\"CASH_TRANSFERENCE\");",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?type=CASH_TRANSFERENCE",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "20",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "CASH_TRANSFERENCE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions CASH_TRANSFERENCE size 5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.content.forEach(item => {",
+									"      pm.expect(item.type).contains(\"CASH_TRANSFERENCE\");",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?size=7&type=CASH_TRANSFERENCE",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "7"
+								},
+								{
+									"key": "type",
+									"value": "CASH_TRANSFERENCE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions CASH_DEPOSIT size 5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.content.forEach(item => {",
+									"      pm.expect(item.type).contains(\"CASH_DEPOSIT\");",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?size=5&type=CASH_DEPOSIT",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "type",
+									"value": "CASH_DEPOSIT"
+								},
+								{
+									"key": "type",
+									"value": "CASH_TRANSFERENCE",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions all activities",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {\r",
+									"     pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET has Body\", function () {\r",
+									"     pm.response.to.be.withBody;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET return JSON\", function () {\r",
+									"     pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET request body is equal response json\", () => {\r",
+									"\r",
+									"  const responseJson = pm.response.json();\r",
+									"  responseJson.content.forEach(item => {\r",
+									"      pm.expect(item.type).to.be.oneOf([\"CASH_DEPOSIT\", \"CASH_TRANSFERENCE\"]);\r",
+									"  })\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions sort by amount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {\r",
+									"     pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET has Body\", function () {\r",
+									"     pm.response.to.be.withBody;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET return JSON\", function () {\r",
+									"     pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET request body is equal response json\", () => {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  const length = responseJson.content.length\r",
+									"  const firstItemAmount = responseJson.content[0].amount;\r",
+									"  const lastItemAmount = responseJson.content[length-1].amount;\r",
+									"  pm.expect(firstItemAmount).to.be.gte(lastItemAmount)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?sort=amount,desc",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "id",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "date",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "type",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "transaction_code",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "description",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "CASH_DEPOSIT",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "CASH_TRANSFERENCE",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "amount,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions sort by date asc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {\r",
+									"     pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET has Body\", function () {\r",
+									"     pm.response.to.be.withBody;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET return JSON\", function () {\r",
+									"     pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET request body is equal response json\", () => {\r",
+									"  const responseJson = pm.response.json();\r",
+									"  const length = responseJson.content.length\r",
+									"  const firstItemDate = Date.parse(responseJson.content[0].date);\r",
+									"  const lastItemDate = Date.parse(responseJson.content[length-1].date);\r",
+									"  \r",
+									"  pm.expect(firstItemDate).to.be.lte(lastItemDate)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?sort=date,asc",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "id",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "amount,desc",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "date,asc"
+								},
+								{
+									"key": "sort",
+									"value": "type",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "transaction_code",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "description",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "CASH_DEPOSIT",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "CASH_TRANSFERENCE",
+									"disabled": true
+								},
+								{
+									"key": "transactionCategory",
+									"value": "REVENUE",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2023-03-22",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2023-03-22",
+									"disabled": true
+								},
+								{
+									"key": "minimumAmount",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "maximumAmount",
+									"value": "10000",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions between dates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const startDate = pm.request.url.getQueryString().slice(10, 20)",
+									"  const endDate = pm.request.url.getQueryString().slice(29, 39) + \"T23:59:59.999999\"",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.content.forEach(item => {",
+									"    pm.expect(Date.parse(item.date)).to.be.gte(Date.parse(startDate));",
+									"    pm.expect(Date.parse(item.date)).to.be.lte(Date.parse(endDate));",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?startDate=2023-03-22&endDate=2023-03-22",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2023-03-22"
+								},
+								{
+									"key": "endDate",
+									"value": "2023-03-22"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions by category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.content.forEach(item => {",
+									"      pm.expect(item.type).contains(\"CASH_TRANSFERENCE\");",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?transactionCategory=EXPENSE",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "transactionCategory",
+									"value": "EXPENSE"
+								},
+								{
+									"key": "transactionCategory",
+									"value": "REVENUE",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Transactions between amounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {\r",
+									"     pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET has Body\", function () {\r",
+									"     pm.response.to.be.withBody;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET return JSON\", function () {\r",
+									"     pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET request body is equal response json\", () => {\r",
+									"\r",
+									"  const minMax = pm.request.url.getQueryString().split('&')\r",
+									"  const minimumAmount = parseFloat(minMax[0].split('=')[1])\r",
+									"  const maximumAmount = parseFloat(minMax[1].split('=')[1])\r",
+									"\r",
+									"  const responseJson = pm.response.json();\r",
+									"  responseJson.content.forEach(item => {\r",
+									"    pm.expect(item.amount).to.be.gte(minimumAmount);\r",
+									"    pm.expect(item.amount).to.be.lte(maximumAmount);\r",
+									"  })\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions?minimumAmount=10&maximumAmount=10000",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "5",
+									"disabled": true
+								},
+								{
+									"key": "minimumAmount",
+									"value": "10"
+								},
+								{
+									"key": "maximumAmount",
+									"value": "10000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recent-Transference",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET Status Ok\", function () {",
+									"     pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"GET has Body\", function () {",
+									"     pm.response.to.be.withBody;",
+									"});",
+									"",
+									"pm.test(\"GET return JSON\", function () {",
+									"     pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"GET request body is equal response json\", () => {",
+									"",
+									"  const responseJson = pm.response.json();",
+									"  responseJson.forEach(item => {",
+									"      pm.expect(item.type).contains(\"CASH_TRANSFERENCE\");",
+									"  })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ACCOUNTS_BASE_URL}}/accounts/1/transactions/recent-transference",
+							"host": [
+								"{{ACCOUNTS_BASE_URL}}"
+							],
+							"path": [
+								"accounts",
+								"1",
+								"transactions",
+								"recent-transference"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

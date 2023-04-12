@@ -17,7 +17,7 @@ public class Card {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String number;
 
     private String holder;
@@ -25,6 +25,8 @@ public class Card {
     private String expirationDate;
 
     private String cvc;
+
+    private boolean deleted;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_id")
@@ -36,6 +38,7 @@ public class Card {
         this.holder = cardRequest.getHolder();
         this.expirationDate = cardRequest.getExpirationDate();
         this.cvc = cardRequest.getCvc();
+        this.deleted = false;
     }
 
 }
