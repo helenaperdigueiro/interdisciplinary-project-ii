@@ -1,12 +1,8 @@
 package com.digitalmoneyhouse.accountservice.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Getter
@@ -19,6 +15,9 @@ public class Account {
 
     @Column(unique = true, nullable = false)
     private Integer userId;
+
+    @Column(unique = true, nullable = false)
+    private String userCpf;
 
     @Column(nullable = false)
     private String  userFullName;

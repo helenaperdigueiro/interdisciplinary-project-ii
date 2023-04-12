@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -38,9 +39,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> messageNotReadable(HttpMessageNotReadableException ex) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        String message = ex.getMessage();
-        errorResponse.setMessage(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse();        errorResponse.setMessage(ex.getMessage());
         errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
@@ -101,5 +100,14 @@ public class ApiExceptionHandler {
         String requiredType = requiredTypePackageParts[requiredTypePackageParts.length-1];
         response.setMessage(String.format("Value '%s' for param '%s' must be of type '%s'", value, param, requiredType));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> missingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        String param = ex.getParameterName();
+        ErrorResponse response = new ErrorResponse();
+        response.setStatus(ex.getStatusCode().value());
+        response.setMessage(String.format("Param '%s' is required", param));
+        return ResponseEntity.status(ex.getStatusCode()).body(response);
     }
 }
