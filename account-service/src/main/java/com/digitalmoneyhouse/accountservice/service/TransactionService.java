@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -44,26 +45,29 @@ public class TransactionService {
     private DocumentsGenerator documentsGenerator;
 
     @Transactional
-    public Transaction save(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
-        Transaction transaction = new Transaction();
+    public TransactionResponse save(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
+        validateTransactionType(transactionRequest.getType().toString());
         if (transactionRequest.getType().equals(TransactionType.CASH_DEPOSIT)) {
-            transaction = makeDeposit(transactionRequest, loggedAccountId);
+            return makeDeposit(transactionRequest, loggedAccountId);
         } else if (transactionRequest.getType().equals(TransactionType.CASH_TRANSFERENCE)) {
-            transaction = makeTransference(transactionRequest, loggedAccountId);
+            return makeTransference(transactionRequest, loggedAccountId);
         }
-        return transactionRepository.save(transaction);
+        return null;
     }
 
-    private Deposit makeDeposit(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
+    @Transactional
+    private DepositResponse makeDeposit(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
         Card card = cardRepository.findByIdAndAccountIdAndDeletedFalse(transactionRequest.getCardId(), loggedAccountId).orElseThrow(CardNotFoundException::new);
         Account account = card.getAccount();
         account.setWalletBalance(account.getWalletBalance() + transactionRequest.getAmount());
         accountRepository.save(account);
         Deposit deposit = new Deposit(transactionRequest, account);
-        return transactionRepository.save(deposit);
+        Deposit saved = transactionRepository.save(deposit);
+        return new DepositResponse(saved, card.getNumber());
     }
 
-    private Transference makeTransference(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
+    @Transactional
+    private TransferenceResponse makeTransference(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
         Double transferenceAmount = transactionRequest.getAmount();
         Account originAccount = accountRepository.findById(loggedAccountId).orElseThrow(AccountNotFoundException::new);
         Account destinationAccount = accountRepository.findByAccountNumber(transactionRequest.getDestinationAccount()).orElseThrow(AccountNotFoundException::new);
@@ -79,7 +83,8 @@ public class TransactionService {
         accountRepository.save(destinationAccount);
 
         Transference transference = new Transference(transactionRequest, originAccount, destinationAccount);
-        return transactionRepository.save(transference);
+        Transference saved = transactionRepository.save(transference);
+        return new TransferenceResponse(saved);
     }
 
     public Page<TransactionResponse> find(Integer accountId, String transactionType, String startDate, String endDate, String transactionCategory, Double minimumAmount, Double maximumAmount, Pageable pageable) throws BusinessException {
@@ -155,7 +160,7 @@ public class TransactionService {
         return documentsGenerator.generateReceipt(transactionResponse);
     }
 
-    public DocumentContainer getMonthlyReport(Integer accountId, String referenceMonth, String contentType) throws BusinessException, IOException {
+    public DocumentContainer getMonthlyReport(Integer accountId, String referenceMonth, String contentType) throws BusinessException, IOException, FontFormatException {
         String pattern = "^\\d{4}-\\d{2}$";
         if (!Pattern.matches(pattern, referenceMonth))
             throw new BusinessException(400, "Param 'referenceMonth' must be in format YYYY-MM");

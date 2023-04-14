@@ -18,12 +18,13 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 
 import com.itextpdf.layout.font.FontProvider;
 import com.opencsv.CSVWriter;
+import com.spire.doc.*;
 import com.spire.doc.Document;
-import com.spire.doc.FileFormat;
-import com.spire.doc.ToPdfParameterList;
 import org.apache.poi.xwpf.usermodel.*;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTFonts;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -34,6 +35,8 @@ import java.util.List;
 public class DocumentsGenerator {
 
     private final Character CSV_SEPARATOR = ';';
+    private final String FONT_FAMILY = "Open Sans";
+
     public DocumentContainer generateReceipt(TransactionResponse transactionResponse) throws IOException {
         String fileName = transactionResponse.getTransactionCode() + ".pdf";
         String html = "";
@@ -206,7 +209,7 @@ public class DocumentsGenerator {
         return html;
     }
 
-    public DocumentContainer generateReport(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions, String contentType) throws IOException, BusinessException {
+    public DocumentContainer generateReport(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions, String contentType) throws IOException, BusinessException, FontFormatException {
         DocumentContainer documentContainer = new DocumentContainer();
         if (contentType == null || contentType.equals("text/csv")) {
             documentContainer = generateCsv(account, referenceMonth, transactions);
@@ -256,42 +259,20 @@ public class DocumentsGenerator {
     }
 
     private DocumentContainer generatePdfFromDocxTemplate(Account account, YearMonth referenceMonth, List<TransactionResponse> transactions) throws IOException {
-        String firstDay = Formatter.formatDateInDayMonthYear(referenceMonth.atDay(1));
-        String lastDay = Formatter.formatDateInDayMonthYear(referenceMonth.atEndOfMonth());
-        LocalDateTime now = Formatter.toBrasiliaTime(LocalDateTime.now());
-        String today = Formatter.formatDateInDayMonthYear(now.toLocalDate());
-        DecimalFormat decimalFormat = new DecimalFormat("00");
-        String nowTime =  String.format("%s:%s:%s", decimalFormat.format(now.getHour()), decimalFormat.format(now.getMinute()), decimalFormat.format(now.getSecond()));
-        String userFullName = account.getUserFullName().toUpperCase();
         String userAccountNumber = account.getAccountNumber();
-        String userCpf = Formatter.formatCpf(account.getUserCpf());
         String month = referenceMonth.toString().replace("-", "_");
         String fileName = String.format("report__%s__%s.pdf", month, userAccountNumber);
 
         if (transactions.isEmpty()) {
-            return new DocumentContainer(convertToPdfBytes(emptyTemplate(account, referenceMonth)), fileName);
+            return new DocumentContainer(convertToPdfBytes(getEmptyTemplate(account, referenceMonth)), fileName);
         }
 
         InputStream reportInputStream = this.getClass().getClassLoader()
                 .getResourceAsStream("templates/monthly_report_template.docx");
+
         XWPFDocument reportTemplate = new XWPFDocument(reportInputStream);
 
-        XWPFHeader header = reportTemplate.getHeaderList().get(0);
-        XWPFParagraph userFullNameParagraph = header.createParagraph();
-        XWPFRun userFullNameRun = userFullNameParagraph.createRun();
-        userFullNameRun.setText(userFullName);
-        userFullNameParagraph.setSpacingAfter(0);
-        XWPFParagraph userInfoParagraph = header.createParagraph();
-        XWPFRun userInfoRun = userInfoParagraph.createRun();
-        userInfoRun.setText(String.format("CPF: %s", userCpf));
-        addTabs(userInfoRun, 3);
-        userInfoRun.setText(String.format("CONTA: %s", userAccountNumber));
-
-        XWPFParagraph reportInfoParagraph = reportTemplate.getParagraphs().get(2);
-        XWPFRun reportInfoRun = reportInfoParagraph.createRun();
-        reportInfoRun.setText(String.format("de %s a %s", firstDay, lastDay));
-        addTabs(reportInfoRun, 4);
-        reportInfoRun.setText(String.format("Emitido em: %s %s", today, nowTime));
+        setDefaultConfig(account, referenceMonth, reportTemplate);
 
         XWPFTable table = reportTemplate.getTables().get(0);
 
@@ -321,19 +302,16 @@ public class DocumentsGenerator {
             }
 
             XWPFTableRow newRow = table.createRow();
+            newRow.setHeight(341);
             XWPFTableCell dateCell = newRow.getCell(0);
             dateCell.setText(transactionDate);
-            dateCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
-            dateCell.getParagraphs().get(0).getRuns().get(0).setBold(false);
+            applyCellStyles(dateCell, ParagraphAlignment.LEFT, XWPFTableCell.XWPFVertAlign.CENTER, "", 12, false);
             XWPFTableCell detailsCell = newRow.getCell(1);
             detailsCell.setText(transactionDetails);
-            detailsCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
+            applyCellStyles(detailsCell, ParagraphAlignment.LEFT, XWPFTableCell.XWPFVertAlign.CENTER, "", 12, false);
             XWPFTableCell amountCell = newRow.getCell(2);
             amountCell.setText(amount);
-            amountCell.getParagraphs().get(0).getRuns().get(0).setFontSize(12);
-            amountCell.getParagraphs().get(0).getRuns().get(0).setBold(true);
-            amountCell.getParagraphs().get(0).setAlignment(ParagraphAlignment.RIGHT);
-            amountCell.getParagraphs().get(0).getRuns().get(0).setColor(amountColor);
+            applyCellStyles(amountCell, ParagraphAlignment.RIGHT, XWPFTableCell.XWPFVertAlign.CENTER, amountColor, 12, true);
         }
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -346,37 +324,12 @@ public class DocumentsGenerator {
         return new DocumentContainer(convertToPdfBytes(bytes), fileName);
     }
 
-    private byte[] emptyTemplate(Account account, YearMonth referenceMonth) throws IOException {
-        String firstDay = Formatter.formatDateInDayMonthYear(referenceMonth.atDay(1));
-        String lastDay = Formatter.formatDateInDayMonthYear(referenceMonth.atEndOfMonth());
-        LocalDateTime now = Formatter.toBrasiliaTime(LocalDateTime.now());
-        String today = Formatter.formatDateInDayMonthYear(now.toLocalDate());
-        DecimalFormat decimalFormat = new DecimalFormat("00");
-        String nowTime =  String.format("%s:%s:%s", decimalFormat.format(now.getHour()), decimalFormat.format(now.getMinute()), decimalFormat.format(now.getSecond()));
-        String userFullName = account.getUserFullName().toUpperCase();
-        String userCpf = Formatter.formatCpf(account.getUserCpf());
-        String userAccountNumber = account.getAccountNumber();
-
+    private byte[] getEmptyTemplate(Account account, YearMonth referenceMonth) throws IOException {
         InputStream reportInputStream = this.getClass().getClassLoader()
                 .getResourceAsStream("templates/monthly_report_template_no_data.docx");
         XWPFDocument reportTemplate = new XWPFDocument(reportInputStream);
 
-        XWPFHeader header = reportTemplate.getHeaderList().get(2);
-        XWPFParagraph userFullNameParagraph = header.createParagraph();
-        XWPFRun userFullNameRun = userFullNameParagraph.createRun();
-        userFullNameRun.setText(userFullName);
-        userFullNameParagraph.setSpacingAfter(0);
-        XWPFParagraph userInfoParagraph = header.createParagraph();
-        XWPFRun userInfoRun = userInfoParagraph.createRun();
-        userInfoRun.setText(String.format("CPF: %s", userCpf));
-        addTabs(userInfoRun, 3);
-        userInfoRun.setText(String.format("CONTA: %s", userAccountNumber));
-
-        XWPFParagraph reportInfoParagraph = reportTemplate.getParagraphs().get(2);
-        XWPFRun reportInfoRun = reportInfoParagraph.createRun();
-        reportInfoRun.setText(String.format("de %s a %s", firstDay, lastDay));
-        addTabs(reportInfoRun, 4);
-        reportInfoRun.setText(String.format("Emitido em: %s %s", today, nowTime));
+        setDefaultConfig(account, referenceMonth, reportTemplate);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         reportTemplate.write(byteArrayOutputStream);
@@ -393,6 +346,51 @@ public class DocumentsGenerator {
             run.addTab();
         }
     }
+
+    private void setDefaultConfig(Account account, YearMonth referenceMonth, XWPFDocument reportTemplate) {
+        String firstDay = Formatter.formatDateInDayMonthYear(referenceMonth.atDay(1));
+        String lastDay = Formatter.formatDateInDayMonthYear(referenceMonth.atEndOfMonth());
+        LocalDateTime now = Formatter.toBrasiliaTime(LocalDateTime.now());
+        String today = Formatter.formatDateInDayMonthYear(now.toLocalDate());
+        DecimalFormat decimalFormat = new DecimalFormat("00");
+        String nowTime =  String.format("%s:%s:%s", decimalFormat.format(now.getHour()), decimalFormat.format(now.getMinute()), decimalFormat.format(now.getSecond()));
+        String userFullName = account.getUserFullName().toUpperCase();
+        String userAccountNumber = account.getAccountNumber();
+        String userCpf = Formatter.formatCpf(account.getUserCpf());
+
+        CTFonts fonts = CTFonts.Factory.newInstance();
+        fonts.setAscii(FONT_FAMILY);
+        fonts.setCs(FONT_FAMILY);
+        fonts.setHAnsi(FONT_FAMILY);
+        XWPFStyles styles = reportTemplate.createStyles();
+        styles.setDefaultFonts(fonts);
+
+        XWPFHeader header = reportTemplate.getHeaderList().get(0);
+        XWPFParagraph userFullNameParagraph = header.createParagraph();
+        XWPFRun userFullNameRun = userFullNameParagraph.createRun();
+        userFullNameRun.setText(userFullName);
+        userFullNameParagraph.setSpacingAfter(0);
+        XWPFParagraph userInfoParagraph = header.createParagraph();
+        XWPFRun userInfoRun = userInfoParagraph.createRun();
+        userInfoRun.setText(String.format("CPF: %s", userCpf));
+        addTabs(userInfoRun, 3);
+        userInfoRun.setText(String.format("CONTA: %s", userAccountNumber));
+
+        XWPFParagraph reportInfoParagraph = reportTemplate.getParagraphs().get(2);
+        XWPFRun reportInfoRun = reportInfoParagraph.createRun();
+        reportInfoRun.setText(String.format("de %s a %s", firstDay, lastDay));
+        addTabs(reportInfoRun, 3);
+        reportInfoRun.setText(String.format("Emitido em: %s %s", today, nowTime));
+    }
+
+    private void applyCellStyles(XWPFTableCell cell, ParagraphAlignment paragraphAlignment, XWPFTableCell.XWPFVertAlign vertAlign, String textColor, int fontSize, boolean isBold) {
+        XWPFRun run = cell.getParagraphs().get(0).getRuns().get(0);
+        cell.getParagraphs().get(0).setAlignment(paragraphAlignment);
+        cell.setVerticalAlignment(vertAlign);
+        run.setColor(textColor);
+        run.setFontSize(fontSize);
+        run.setBold(isBold);
+    };
 
     private byte[] convertToPdfBytes(byte[] reportBytesFromDoc) {
         Document doc = new Document();
