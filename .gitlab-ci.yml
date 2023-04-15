@@ -1,0 +1,21 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - ssh -i $SSH_KEY $EC2_INSTANCE_TESTE
+    - cd grupo1
+    - cd account-service
+    - echo "Build started..."
+    - mvn install -DskipTests
+    - docker build -t account-service-image .
+    - echo "Build finished"
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploy started..."
+    - docker-compose up -d
+    - echo "Deploy finished"
