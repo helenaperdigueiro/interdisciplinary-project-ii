@@ -2,29 +2,26 @@ stages:
   - build
   - deploy
 
-checkout_test_branch:
-  stage: build
-  script:
-    - git checkout teste
-
 build:
   stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "teste"'
   script:
     - ssh -i $SSH_KEY $EC2_INSTANCE_TESTE
     - cd grupo1
+    - git checkout teste
     - cd account-service
     - echo "Build started..."
     - mvn install -DskipTests
     - docker build -t account-service-image .
     - echo "Build finished"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "teste"'
 
 deploy:
   stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "teste"'
   script:
     - echo "Deploy started..."
     - docker-compose up -d
     - echo "Deploy finished"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "teste"'
+  
