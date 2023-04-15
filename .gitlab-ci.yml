@@ -2,6 +2,9 @@ stages:
   - build
   - deploy
 
+only:
+  - teste
+
 build:
   stage: build
   script:
