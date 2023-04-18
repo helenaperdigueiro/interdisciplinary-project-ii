@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -59,7 +60,7 @@ public class TransactionService {
     private DepositResponse makeDeposit(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
         Card card = cardRepository.findByIdAndAccountIdAndDeletedFalse(transactionRequest.getCardId(), loggedAccountId).orElseThrow(CardNotFoundException::new);
         Account account = card.getAccount();
-        account.setWalletBalance(account.getWalletBalance() + transactionRequest.getAmount());
+        account.setWalletBalance(account.getWalletBalance().add(transactionRequest.getAmount()));
         accountRepository.save(account);
         Deposit deposit = new Deposit(transactionRequest, account);
         Deposit saved = transactionRepository.save(deposit);
@@ -68,16 +69,16 @@ public class TransactionService {
 
     @Transactional
     private TransferenceResponse makeTransference(TransactionRequest transactionRequest, Integer loggedAccountId) throws BusinessException {
-        Double transferenceAmount = transactionRequest.getAmount();
+        BigDecimal transferenceAmount = transactionRequest.getAmount();
         Account originAccount = accountRepository.findById(loggedAccountId).orElseThrow(AccountNotFoundException::new);
         Account destinationAccount = accountRepository.findByAccountNumber(transactionRequest.getDestinationAccount()).orElseThrow(AccountNotFoundException::new);
 
-        if (transferenceAmount > originAccount.getWalletBalance()) {
+        if (transferenceAmount.compareTo(originAccount.getWalletBalance()) > 0) {
             throw new InsufficientBalanceException();
         }
 
-        originAccount.setWalletBalance(originAccount.getWalletBalance() - transferenceAmount);
-        destinationAccount.setWalletBalance(destinationAccount.getWalletBalance() + transferenceAmount);
+        originAccount.setWalletBalance(originAccount.getWalletBalance().subtract(transferenceAmount));
+        destinationAccount.setWalletBalance(destinationAccount.getWalletBalance().add(transferenceAmount));
 
         accountRepository.save(originAccount);
         accountRepository.save(destinationAccount);
@@ -102,7 +103,7 @@ public class TransactionService {
     public DepositResponse resultObjectToDepositResponse(Object[] result) {
         DepositResponse deposit = new DepositResponse();
         deposit.setId((Integer) result[0]);
-        deposit.setAmount((Double) result[1]);
+        deposit.setAmount((BigDecimal) result[1]);
         deposit.setDate(((Timestamp) result[2]).toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
         deposit.setType((String) result[3]);
         deposit.setTransactionCode((String) result[4]);
@@ -121,7 +122,7 @@ public class TransactionService {
         String destinationAccountHolderName = accountRepository.findAccountHolderNameById((Integer) result[11]);
         TransferenceResponse transference = new TransferenceResponse();
         transference.setId((Integer) result[0]);
-        transference.setAmount((Double) result[1]);
+        transference.setAmount((BigDecimal) result[1]);
         transference.setDate(((Timestamp) result[2]).toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime());
         transference.setType((String) result[3]);
         transference.setTransactionCode((String) result[4]);

@@ -123,7 +123,7 @@ public class DocumentsGenerator {
                 "\t</div>";
 
         String transactionDateTime = Formatter.formatDateTime(transferenceResponse.getDate());
-        String transferenceAmount = Formatter.formatDouble(transferenceResponse.getAmount());
+        String transferenceAmount = Formatter.formatBigDecimal(transferenceResponse.getAmount());
         String originAccountHolderName = transferenceResponse.getOriginAccountHolderName();
         String originAccountNumber = transferenceResponse.getOriginAccountNumber();
         String detinationAccountHolderName = transferenceResponse.getDestinationAccountHolderName();
@@ -192,7 +192,7 @@ public class DocumentsGenerator {
                 "\t</div>";
 
         String transactionDateTime = Formatter.formatDateTime(depositResponse.getDate());
-        String transferenceAmount = Formatter.formatDouble(depositResponse.getAmount());
+        String transferenceAmount = Formatter.formatBigDecimal(depositResponse.getAmount());
         String cardNumber = depositResponse.getCardNumber();
         String accountNumber = depositResponse.getAccountNumber();
         String description = depositResponse.getDescription();
@@ -232,7 +232,7 @@ public class DocumentsGenerator {
         for (TransactionResponse transaction : transactions) {
             Boolean isExpense;
             String transactionDate = Formatter.formatDateInDayMonthYear(transaction.getDate().toLocalDate());
-            String amount = Formatter.formatDouble(transaction.getAmount()).replace(".", "");
+            String amount = Formatter.formatBigDecimal(transaction.getAmount()).replace(".", "");
             String transactionDetails = "";
             String transactionType = "ENTRADA";
             if (transaction instanceof TransferenceResponse) {
@@ -277,7 +277,7 @@ public class DocumentsGenerator {
         XWPFTable table = reportTemplate.getTables().get(0);
 
         for (TransactionResponse transaction : transactions) {
-            String amount = Formatter.formatDouble(transaction.getAmount());
+            String amount = Formatter.formatBigDecimal(transaction.getAmount());
             String transactionDate = Formatter.formatDateInDayMonthYear(transaction.getDate().toLocalDate());
             String transactionDetails = "";
             Boolean isExpense;
