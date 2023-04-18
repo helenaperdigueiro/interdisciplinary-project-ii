@@ -7,6 +7,7 @@ import com.digitalmoneyhouse.accountservice.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Random;
 
 @Service
@@ -22,7 +23,7 @@ public class AccountService {
         }
 
         account.setAccountNumber(accountNumber);
-        account.setWalletBalance(0D);
+        account.setWalletBalance(BigDecimal.ZERO);
 
         return accountRepository.save(account);
     }

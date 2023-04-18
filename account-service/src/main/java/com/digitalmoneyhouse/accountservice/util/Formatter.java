@@ -1,5 +1,6 @@
 package com.digitalmoneyhouse.accountservice.util;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,10 @@ public class Formatter {
     }
 
     public  static String formatDouble(Double value) {
+        return String.format(Locale.GERMAN, "%,.2f", value);
+    }
+
+    public  static String formatBigDecimal(BigDecimal value) {
         return String.format(Locale.GERMAN, "%,.2f", value);
     }
 
