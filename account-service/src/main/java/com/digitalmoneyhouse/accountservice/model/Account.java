@@ -1,5 +1,7 @@
 package com.digitalmoneyhouse.accountservice.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,5 +26,5 @@ public class Account {
 
     private String accountNumber;
 
-    private Double walletBalance;
+    private BigDecimal walletBalance;
 }

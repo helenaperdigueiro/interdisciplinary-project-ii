@@ -3,6 +3,7 @@ package com.digitalmoneyhouse.accountservice.dto;
 import com.digitalmoneyhouse.accountservice.model.Transaction;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @ToString
 public class TransactionResponse {
     private Integer id;
-    private Double amount;
+    private BigDecimal amount;
     private LocalDateTime date;
     private String type;
     private String transactionCode;

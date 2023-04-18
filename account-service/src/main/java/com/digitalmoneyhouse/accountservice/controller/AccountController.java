@@ -3,7 +3,6 @@ package com.digitalmoneyhouse.accountservice.controller;
 import com.digitalmoneyhouse.accountservice.dto.*;
 import com.digitalmoneyhouse.accountservice.exception.BusinessException;
 import com.digitalmoneyhouse.accountservice.model.Account;
-import com.digitalmoneyhouse.accountservice.model.Transaction;
 import com.digitalmoneyhouse.accountservice.service.AccountService;
 import com.digitalmoneyhouse.accountservice.service.CardService;
 import com.digitalmoneyhouse.accountservice.service.TransactionService;
@@ -14,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.awt.*;
 import java.io.*;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/transactions")
-    public ResponseEntity<Transaction> saveTransaction(@PathVariable Integer accountId, @Valid @RequestBody TransactionRequest transactionRequest) throws BusinessException {
+    public ResponseEntity<TransactionResponse> saveTransaction(@PathVariable Integer accountId, @Valid @RequestBody TransactionRequest transactionRequest) throws BusinessException {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.save(transactionRequest, accountId));
     }
 
@@ -102,7 +103,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions/reports")
-    public ResponseEntity<byte[]> getMonthlyReport(@PathVariable Integer accountId, @RequestParam String referenceMonth, HttpServletRequest request) throws IOException, BusinessException {
+    public ResponseEntity<byte[]> getMonthlyReport(@PathVariable Integer accountId, @RequestParam String referenceMonth, HttpServletRequest request) throws IOException, BusinessException, FontFormatException {
         String contentType = request.getHeader("Content-Type");
         DocumentContainer documentContainer = transactionService.getMonthlyReport(accountId, referenceMonth, contentType);
 

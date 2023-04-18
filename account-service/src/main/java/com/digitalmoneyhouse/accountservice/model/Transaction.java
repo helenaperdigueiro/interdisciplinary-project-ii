@@ -3,6 +3,7 @@ package com.digitalmoneyhouse.accountservice.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class Transaction {
     private Integer id;
 
     @Column(nullable = false)
-    private Double amount;
+    private BigDecimal amount;
 
     @Column(nullable = false)
     private LocalDateTime date;
@@ -33,7 +34,7 @@ public class Transaction {
     private String transactionCode;
     private String description;
 
-    public Transaction(Double amount, TransactionType type, String description) {
+    public Transaction(BigDecimal amount, TransactionType type, String description) {
         this.amount = amount;
         this.type = type;
         this.date = LocalDateTime.now();
